@@ -14,7 +14,7 @@ semPower.showPlot <- function(chiCrit, ncp, df, linewidth = 1){
   
   # define central and non-central chi
   maxvalue <- qchisq(.99999, df, ncp)
-  minvalue <- qchisq(.00001, df, 0)
+  minvalue <- max(.1, qchisq(.00001, df, 0))
   x <- seq(minvalue, maxvalue, length=1000)
   
   xchi <- dchisq(x, df, ncp = 0)
@@ -87,7 +87,7 @@ semPower.powerPlot.byN <- function(effect = NULL, effect.measure = NULL,
                                    power.min = alpha, power.max = .999,
                                    steps = 50, linewidth = 1){
   
-  effect.measure <- toupper(effect.measure)
+  if(!is.null(effect.measure)) effect.measure <- toupper(effect.measure)
   
   validateInput('powerplot.byN', effect = effect, effect.measure = effect.measure,
                 alpha = alpha, beta = NULL, power = NULL, abratio = NULL,
@@ -95,6 +95,12 @@ semPower.powerPlot.byN <- function(effect = NULL, effect.measure = NULL,
                 SigmaHat = SigmaHat, Sigma = Sigma,
                 power.min = power.min, power.max = power.max,
                 steps = steps, linewidth = linewidth)
+  
+  # do this here instead of in validator
+  if(power.min < alpha){
+    power.min <- alpha
+    warning("power cannot be lower than alpha, setting power.min=alpha")
+  }
   
   # determine N
   power <- seq(power.min, power.max, length.out = steps)
