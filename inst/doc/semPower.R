@@ -4,21 +4,20 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-## -----------------------------------------------------------------------------
-library(semPower)
-ap <- semPower.aPriori(effect = .05, effect.measure = 'RMSEA', 
-                        alpha = .05, power = .80, df = 100)
-summary(ap)
+## ----eval=FALSE---------------------------------------------------------------
+#  ap <- semPower.aPriori(effect = .05, effect.measure = 'RMSEA',
+#                          alpha = .05, power = .80, df = 100)
+#  summary(ap)
 
-## -----------------------------------------------------------------------------
-ph <- semPower.postHoc(effect = .05, effect.measure = 'RMSEA', 
-                        alpha = .05, N = 1000, df = 100)
-summary(ph)
+## ----eval=FALSE---------------------------------------------------------------
+#  ph <- semPower.postHoc(effect = .05, effect.measure = 'RMSEA',
+#                          alpha = .05, N = 1000, df = 100)
+#  summary(ph)
 
-## -----------------------------------------------------------------------------
-cp <- semPower.compromise(effect = .05, effect.measure = 'RMSEA', 
-                           abratio = 1, N = 1000, df = 100)
-summary(cp)
+## ----eval=FALSE---------------------------------------------------------------
+#  cp <- semPower.compromise(effect = .05, effect.measure = 'RMSEA',
+#                             abratio = 1, N = 1000, df = 100)
+#  summary(cp)
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  library(lavaan)
@@ -28,7 +27,8 @@ summary(cp)
 #  # define relations between factors and items in terms of loadings
 #  f1 =~ .7*x1 + .7*x2 + .5*x3 + .5*x4
 #  f2 =~ .8*x5 + .6*x6 + .6*x7 + .4*x8
-#  # define unique variances of the items to be equal to 1-loading^2, so that the loadings above are in a standardized metric
+#  # define unique variances of the items to be equal to 1-loading^2,
+#  # so that the loadings above are in a standardized metric
 #  x1 ~~ .51*x1
 #  x2 ~~ .51*x2
 #  x3 ~~ .75*x3
@@ -54,7 +54,7 @@ summary(cp)
 #  f1 =~ x1 + x2 + x3 + x4
 #  f2 =~ x5 + x6 + x7 + x8
 #  '
-#  summary(sem(model.h1, sample.cov = cov.pop, sample.nobs = 1000), stand = T, fit = T)
+#  summary(sem(model.h1, sample.cov = cov.pop, sample.nobs = 1000, sample.cov.rescale = F), stand = T, fit = T)
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  # define (wrong) analysis model
@@ -67,8 +67,8 @@ summary(cp)
 #  # set correlation between the factors to 1
 #  f1 ~~ 1*f2
 #  '
-#  # fit analysis model to population data
-#  fit.h0 <- sem(model.h0, sample.cov = cov.pop, sample.nobs = 1000, likelihood='wishart')
+#  # fit analysis model to population data; note the sample.nobs are arbitrary
+#  fit.h0 <- sem(model.h0, sample.cov = cov.pop, sample.nobs = 1000, sample.cov.rescale = F, likelihood='wishart')
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  # model implied covariance matrix
@@ -78,6 +78,80 @@ summary(cp)
 #  ap5 <- semPower.aPriori(SigmaHat = cov.h0, Sigma = cov.pop,
 #                          alpha = .05, power = .95, df = df)
 #  summary(ap5)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  library(lavaan)
+#  
+#  # population model group 1
+#  model.pop.g1 <- '
+#  f1 =~ .8*x1 + .7*x2 + .6*x3
+#  f2 =~ .7*x4 + .6*x5 + .5*x6
+#  x1 ~~ .36*x1
+#  x2 ~~ .51*x2
+#  x3 ~~ .64*x3
+#  x4 ~~ .51*x4
+#  x5 ~~ .64*x5
+#  x6 ~~ .75*x6
+#  f1 ~~ 1*f1
+#  f2 ~~ 1*f2
+#  f1 ~~ 0.5*f2
+#  '
+#  # population model group 2
+#  model.pop.g2 <- '
+#  f1 =~ .8*x1 + .4*x2 + .6*x3
+#  f2 =~ .7*x4 + .6*x5 + .5*x6
+#  x1 ~~ .36*x1
+#  x2 ~~ .84*x2
+#  x3 ~~ .64*x3
+#  x4 ~~ .51*x4
+#  x5 ~~ .64*x5
+#  x6 ~~ .75*x6
+#  f1 ~~ 1*f1
+#  f2 ~~ 1*f2
+#  f1 ~~ 0.5*f2
+#  '
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # population covariance matrices
+#  cov.pop.g1 <- fitted(sem(model.pop.g1))$cov
+#  cov.pop.g2 <- fitted(sem(model.pop.g2))$cov
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # define analysis model
+#  model.h0 <- '
+#  f1 =~ x1 + x2 + x3
+#  f2 =~ x4 + x5 + x6
+#  '
+#  # fit analysis model to population data; note the sample.nobs are arbitrary
+#  fit.h0 <- sem(model.h0, sample.cov = list(cov.pop.g1, cov.pop.g2),
+#                sample.nobs = list(1000, 1000), sample.cov.rescale = F,
+#                group.equal = 'loadings', likelihood='wishart')
+#  # get model implied covariance matrices
+#  cov.h0.g1 <- fitted(fit.h0)$`Group 1`$cov
+#  cov.h0.g2 <- fitted(fit.h0)$`Group 2`$cov
+#  # df of metric invariance model
+#  df <- fit.h0@test[[1]]$df
+#  # obtain baseline df (no invariance constraints)
+#  fit.bl <- sem(model.h0, sample.cov = list(cov.pop.g1, cov.pop.g2),
+#                sample.nobs = list(1000, 1000), sample.cov.rescale=F,
+#                likelihood='wishart')
+#  df.bl <- fit.bl@test[[1]]$df
+#  # difference in df
+#  df.diff <- df - df.bl
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # perform a priori power analysis
+#  ap6 <- semPower.aPriori(SigmaHat = list(cov.h0.g1, cov.h0.g2),
+#                          Sigma = list(cov.pop.g1, cov.pop.g2),
+#                          alpha = .05, beta = .20, N = list(1, 1), df = df.diff)
+#  
+#  summary(ap6)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # perform post-hoc power analysis
+#  ph6 <- semPower.postHoc(effect = list(0.01102, 0.01979), effect.measure = 'F0',
+#                          alpha = .05, N = list(389, 389), df = df.diff)
+#  summary(ph6)
 
 ## -----------------------------------------------------------------------------
 library(semPower)
@@ -152,7 +226,8 @@ semPower.powerPlot.byEffect(effect.measure = 'RMSEA', alpha = .05, N = 500,
 #  cov.pop <- fitted(sem(model.pop))$cov
 #  
 #  # get covariance matrix as implied by H0 model
-#  res.h0 <- sem(model.h0, sample.cov = cov.pop, sample.nobs = 1000, likelihood='wishart')
+#  res.h0 <- sem(model.h0, sample.cov = cov.pop,
+#                sample.nobs = 1000, sample.cov.rescale = F, likelihood='wishart')
 #  df <- res.h0@test[[1]]$df
 #  cov.h0 <- fitted(res.h0)$cov
 

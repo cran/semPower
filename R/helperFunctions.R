@@ -11,8 +11,8 @@
 #' @param n number of observations
 #' @return NCP
 getNCP <- function(Fmin, n){
-  NCP <- (n-1) * Fmin
-  NCP
+  NCP <- unlist(Fmin) * (unlist(n)-1)
+  sum(NCP)
 }
 
 
@@ -145,10 +145,11 @@ getF.AGFI <- function(AGFI, df, p){
 #' @param p number of observed variables
 #' @param SigmaHat model implied covariance matrix
 #' @param Sigma population covariance matrix
+#' @param N list of sample weights
 #' @return list of indices
-getIndices.F <- function(fmin, df, p = NULL, SigmaHat = NULL, Sigma = NULL){
+getIndices.F <- function(fmin, df, p = NULL, SigmaHat = NULL, Sigma = NULL, N = NULL){
   fit <- list(
-    rmsea = getRMSEA.F(fmin, df),
+    rmsea = getRMSEA.F(fmin, df, nGroups=ifelse(length(N)>1, length(N), 1)),
     mc = getMc.F(fmin),
     gfi = NULL,
     agfi = NULL
@@ -158,11 +159,17 @@ getIndices.F <- function(fmin, df, p = NULL, SigmaHat = NULL, Sigma = NULL){
     fit$agfi <- getAGFI.F(fmin, df, p)
   }
   if(!is.null(SigmaHat)){
-    fit$srmr <- getSRMR.Sigma(SigmaHat, Sigma)
-    fit$cfi <- getCFI.Sigma(SigmaHat, Sigma)
+    if(length(N) > 1){
+      fit$srmr <- getSRMR.Sigma.mgroups(SigmaHat, Sigma, N)
+      fit$cfi <- getCFI.Sigma.mgroups(SigmaHat, Sigma, N)
+    }else{
+      fit$srmr <- getSRMR.Sigma(SigmaHat, Sigma)
+      fit$cfi <- getCFI.Sigma(SigmaHat, Sigma)
+    }
   }
   fit
 }
+
 
 
 #' getRMSEA.F
@@ -173,12 +180,12 @@ getIndices.F <- function(fmin, df, p = NULL, SigmaHat = NULL, Sigma = NULL){
 #'
 #' @param Fmin minimum of the ML-fit-function
 #' @param df model degrees of freedom
+#' @param nGroups the number of groups
 #' @return RMSEA
-getRMSEA.F <- function(Fmin, df){
-  RMSEA <- sqrt(Fmin/df)
+getRMSEA.F <- function(Fmin, df, nGroups = 1){
+  RMSEA <- sqrt(Fmin/df) * sqrt(nGroups)
   RMSEA
 }
-
 
 #' getMc.F
 #'
@@ -236,8 +243,8 @@ getAGFI.F <- function(Fmin, df, p){
 #' @param S observed (or population) covariance matrix
 #' @return Fmin
 getF.Sigma <- function(SigmaHat, S){
-  checkPositiveDefinite(SigmaHat, 'SigmaHat')
-  checkPositiveDefinite(S, 'S')
+  checkPositiveDefinite(SigmaHat)
+  checkPositiveDefinite(S)
   fmin <- sum(diag(S %*% solve(SigmaHat))) + log(det(SigmaHat)) - log(det(S)) - ncol(S)
   fmin
 }
@@ -251,14 +258,44 @@ getF.Sigma <- function(SigmaHat, S){
 #' @param S observed (or population) covariance matrix
 #' @return SRMR
 getSRMR.Sigma <- function(SigmaHat, S){
-  checkPositiveDefinite(SigmaHat, 'SigmaHat')
-  checkPositiveDefinite(S, 'S')
+  checkPositiveDefinite(SigmaHat)
+  checkPositiveDefinite(S)
   p <- ncol(S)
-  m <- (S - SigmaHat)
-  f.ols <- .5*sum(m^2)
-  srmr <- sqrt(f.ols / (.5*(p*(p+1))))
+
+  # bollen approach to standardization
+  # m <- cov2cor(S) - cov2cor(SigmaHat)
+  
+  # hu+bentler approach to std
+  sqrt.d <- 1/sqrt(diag(S))
+  D <- diag(sqrt.d, ncol=length(sqrt.d))
+  m <- D %*% (S - SigmaHat) %*% D
+  
+  fols <- sum(m[lower.tri(m, diag=T)]^2)
+  # mplus variant
+  #fols <- (sum(m[lower.tri(m, diag=F)]^2)  +  sum(((diag(S) - diag(SigmaHat))/diag(S))^2)) 
+  
+  srmr <- sqrt(fols / (p*(p+1)/2))
   srmr
 }
+
+#' getSRMR.Sigma.mgroups 
+#'
+#' calculates SRMR given model-implied and observed covariance matrix for multiple group models
+#'
+#' @param SigmaHat a list of model implied covariance matrices
+#' @param S a list of observed (or population) covariance matrices
+#' @param N a list of group weights
+#' @return SRMR
+getSRMR.Sigma.mgroups <- function(SigmaHat, S, N){
+  srmrs <- sapply(seq_along(SigmaHat), function(x) getSRMR.Sigma(SigmaHat[[x]], S[[x]]))
+  # lavaan approach: apply sample weights to srmr
+  # srmr <- (sum(srmrs*N)/sum(N))
+  # mplus approach: apply sample weights to squared sums of res
+  srmr <- sqrt( sum(unlist(srmrs)^2 * unlist(N)) / sum(unlist(N)) )
+  srmr
+}
+
+
 
 
 #' getCFI.Sigma
@@ -271,8 +308,8 @@ getSRMR.Sigma <- function(SigmaHat, S){
 #' @param S observed (or population) covariance matrix
 #' @return CFI
 getCFI.Sigma <- function(SigmaHat, S){
-  checkPositiveDefinite(SigmaHat, 'SigmaHat')
-  checkPositiveDefinite(S, 'S')
+  checkPositiveDefinite(SigmaHat)
+  checkPositiveDefinite(S)
   fm <- getF.Sigma(SigmaHat, S)
   SigmaHatNull <- diag(ncol(S))
   diag(SigmaHatNull) <- diag(S)
@@ -281,6 +318,37 @@ getCFI.Sigma <- function(SigmaHat, S){
   cfi
 }
 
+#' getCFI.Sigma.mgroups
+#'
+#' calculates CFI given model-implied and observed covariance matrix for multiple group models.
+#'
+#' cfi= (f_null - f_hyp) / f_null
+#'
+#' @param SigmaHat a list of model implied covariance matrix
+#' @param S a list of observed (or population) covariance matrix
+#' @param N a list of group weights
+#' @return CFI
+getCFI.Sigma.mgroups <- function(SigmaHat, S, N){
+  N <- unlist(N)
+
+  fmin.g <- sapply(seq_along(S), function(x){getF.Sigma(SigmaHat[[x]], S[[x]])})
+  fnull.g <- sapply(seq_along(S), function(x){
+    SigmaHatNull <- diag(ncol(S[[x]]))
+    diag(SigmaHatNull) <- diag(S[[x]])
+    getF.Sigma(SigmaHatNull, S[[x]])
+    })
+  
+  # approach A: apply sampling weights to CFI
+  #cfi.g <- (fnull.g - fmin.g)/fnull.g
+  #cfi <-  sum(cfi.g * N) / sum(N)
+
+  # approach B: apply sampling weights to fmin and fnull
+  fmin <- sum(fmin.g * N) / sum(N)
+  fnull <- sum(fnull.g * N) / sum(N)
+  cfi <- (fnull - fmin)/fnull
+  
+  return(cfi)
+}
 
 
 ##########################  output and formatting #####################
@@ -319,9 +387,12 @@ getFormattedResults <- function(type, result, digits = 6){
 
   if(type == 'a-priori'){
 
-    rows <- c('df','Required Num Observations','')
+    ifelse(length(result$requiredN.g) == 1, rows <- c('df','Required Num Observations',''), rows <- c('df','Required Num Observations',' ',''))
     body <- data.frame(rows)
-    body$values <- c(result$df, result$requiredN, '')
+    ifelse(length(result$requiredN.g) == 1, 
+           body$values <- c(result$df, result$requiredN, ''),
+           body$values <- c(result$df, result$requiredN, paste0('(',paste(result$requiredN.g, collapse = ', '),')'), '')
+    )    
 
     rows <- c('Critical Chi-Square', 'NCP', 'Alpha', 'Beta', 'Power (1-beta)', 'Implied Alpha/Beta Ratio')
     foot <- data.frame(rows)
@@ -352,9 +423,12 @@ getFormattedResults <- function(type, result, digits = 6){
 
   if(type == 'post-hoc'){
 
-    rows <- c('df','Num Observations')
+    ifelse(!is.list(result$N), rows <- c('df','Num Observations'), rows <- c('df','Num Observations',' '))
     body <- data.frame(rows)
-    body$values <- c(result$df, result$N)
+    ifelse(!is.list(result$N), 
+           body$values <- c(result$df, result$N), 
+           body$values <- c(result$df, sum(unlist(result$N)), paste0('(',paste(result$N, collapse = ', '),')'))
+          )
 
     rows <- c('NCP', '', 'Critical Chi-Square')
     body2 <- data.frame(rows)
@@ -389,17 +463,25 @@ getFormattedResults <- function(type, result, digits = 6){
 
   if(type == 'compromise'){
 
-    rows <- c('df','Num Observations', 'Desired Alpha/Beta Ratio', '','Critical Chi-Square')
+    ifelse(!is.list(result$N), 
+           rows <- c('df','Num Observations', 'Desired Alpha/Beta Ratio', '','Critical Chi-Square'), 
+           rows <- c('df','Num Observations', ' ', 'Desired Alpha/Beta Ratio', '','Critical Chi-Square')
+           )
     body <- data.frame(rows)
+    
     if(!result$bPrecisionWarning){
-      body$values <- c(result$df, result$N, formatC(result$desiredAbratio, format = 'f', digits = digits), '',
-                       substr(formatC(result$chiCrit, format = 'f', digits = digits), 1, digits+2))
+      sChiCrit <- substr(formatC(result$chiCrit, format = 'f', digits = digits), 1, digits+2)
     }else{
       smax <- substr(formatC(result$max, format = 'f', digits = digits), 1, digits+2)
       smin <- substr(formatC(result$min, format = 'f', digits = digits), 1, digits+2)
       sChiCrit <- paste(smax,'< Chi-Square < ', smin)
-      body$values <- c(result$df, result$N, formatC(result$desiredAbratio, format = 'f', digits = digits), '',
-                       sChiCrit)
+    }
+    if(!is.list(result$N)){
+      body$values <- c(result$df, result$N, 
+                       formatC(result$desiredAbratio, format = 'f', digits = digits), '', sChiCrit)
+    }else{
+      body$values <- c(result$df, sum(unlist(result$N)), paste0('(',paste(result$N, collapse = ', '),')'), 
+                       formatC(result$desiredAbratio, format = 'f', digits = digits), '', sChiCrit)
     }
 
     rows <- c('Implied Alpha', 'Implied Beta', 'Implied Power (1-beta)', 'Actual Alpha/Beta Ratio')

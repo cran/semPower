@@ -12,49 +12,93 @@
 
 <meta name="author" content="Morten Moshagen" />
 
-<meta name="date" content="2020-05-17" />
+<meta name="date" content="2020-08-24" />
 
 <title>semPower Manual</title>
 
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-div.sourceCode { overflow-x: auto; }
-table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
-  margin: 0; padding: 0; vertical-align: baseline; border: none; }
-table.sourceCode { width: 100%; line-height: 100%; }
-td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
-td.sourceCode { padding-left: 5px; }
-code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code > span.dt { color: #902000; } /* DataType */
-code > span.dv { color: #40a070; } /* DecVal */
-code > span.bn { color: #40a070; } /* BaseN */
-code > span.fl { color: #40a070; } /* Float */
-code > span.ch { color: #4070a0; } /* Char */
-code > span.st { color: #4070a0; } /* String */
-code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code > span.ot { color: #007020; } /* Other */
-code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code > span.fu { color: #06287e; } /* Function */
-code > span.er { color: #ff0000; font-weight: bold; } /* Error */
-code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-code > span.cn { color: #880000; } /* Constant */
-code > span.sc { color: #4070a0; } /* SpecialChar */
-code > span.vs { color: #4070a0; } /* VerbatimString */
-code > span.ss { color: #bb6688; } /* SpecialString */
-code > span.im { } /* Import */
-code > span.va { color: #19177c; } /* Variable */
-code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code > span.op { color: #666666; } /* Operator */
-code > span.bu { } /* BuiltIn */
-code > span.ex { } /* Extension */
-code > span.pp { color: #bc7a00; } /* Preprocessor */
-code > span.at { color: #7d9029; } /* Attribute */
-code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 
 </style>
 <script>
@@ -81,7 +125,187 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
 
 
 
@@ -95,12 +319,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">semPower Manual</h1>
 <h4 class="author">Morten Moshagen</h4>
-<h4 class="date">2020-05-17</h4>
+<h4 class="date">2020-08-24</h4>
 
 
 
 <p>Power Analysis for Structural Equation Models</p>
-<p>Contact: <a href="mailto:morten.moshagen@uni-ulm.de">morten.moshagen@uni-ulm.de</a></p>
+<p>Contact: <a href="mailto:morten.moshagen@uni-ulm.de" class="email">morten.moshagen@uni-ulm.de</a></p>
 <p>Please cite as:</p>
 <ul>
 <li>Moshagen, M., &amp; Erdfelder, E. (2016). A new strategy for testing structural equation models. <em>Structural Equation Modeling, 23</em>, 54–60.</li>
@@ -127,78 +351,26 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h1>Examples</h1>
 <div id="determine-required-sample-size-a-priori-power-analysis" class="section level2">
 <h2>Determine required sample size (a priori power analysis)</h2>
-<p>Use <a href="#ap">semPower.aPriori</a> to determine the required sample size to detect a certain effect with a certain power. For example, let’s determine the required sample size to detect misspecifications of a model (involving df = 100 degrees of freedom) corresponding to RMSEA = .05 with a power of 80% on an alpha error of .05. After loading the <code>semPower</code> package, call the function <code>semPower.aPriori</code> with arguments <code>effect = .05</code>, <code>effect.measure = 'RMSEA'</code>, <code>alpha = .05</code>, <code>power = .80</code>, and <code>df = 100</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(semPower)
-ap &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">effect =</span> .<span class="dv">05</span>, <span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, 
-                        <span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">power =</span> .<span class="dv">80</span>, <span class="dt">df =</span> <span class="dv">100</span>)
-<span class="kw">summary</span>(ap)
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  semPower: A-priori power analysis</span>
-<span class="co">#&gt;                                    </span>
-<span class="co">#&gt;  F0                        0.250000</span>
-<span class="co">#&gt;  RMSEA                     0.050000</span>
-<span class="co">#&gt;  Mc                        0.882497</span>
-<span class="co">#&gt;                                    </span>
-<span class="co">#&gt;  df                        100     </span>
-<span class="co">#&gt;  Required Num Observations 164     </span>
-<span class="co">#&gt;                                    </span>
-<span class="co">#&gt;  Critical Chi-Square       124.3421</span>
-<span class="co">#&gt;  NCP                       40.75000</span>
-<span class="co">#&gt;  Alpha                     0.050000</span>
-<span class="co">#&gt;  Beta                      0.197211</span>
-<span class="co">#&gt;  Power (1-beta)            0.802789</span>
-<span class="co">#&gt;  Implied Alpha/Beta Ratio  0.253535</span></code></pre></div>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Use <a href="#ap">semPower.aPriori</a> to determine the required sample size to detect a certain effect with a certain power. For example, let’s determine the required sample size to detect misspecifications of a model (involving df = 100 degrees of freedom) corresponding to RMSEA = .05 with a power of 80% on an alpha error of .05. After loading the <code>semPower</code> package, call the function <code>semPower.aPriori</code> with arguments <code>effect = .05</code>, <code>effect.measure = &#39;RMSEA&#39;</code>, <code>alpha = .05</code>, <code>power = .80</code>, and <code>df = 100</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>ap &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">effect =</span> <span class="fl">.05</span>, <span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, </span>
+<span id="cb1-2"><a href="#cb1-2"></a>                        <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">df =</span> <span class="dv">100</span>)</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">summary</span>(ap)</span></code></pre></div>
 <p>The results show that a sample size of N = 164 yields a power of approximately 80% to reject a wrong model (with df = 100) with an amount of misspecification corresponding to RMSEA = .05 on alpha = .05.</p>
 </div>
 <div id="determine-achieved-power-post-hoc-power-analysis" class="section level2">
 <h2>Determine achieved power (post-hoc power analysis)</h2>
-<p>Use <a href="#ph">semPower.postHoc</a> to determine the actually achieved power with a certain sample size. For example, let’s determine the achieved power with a sample size of N = 1000 to detect misspecifications of a model (involving df = 100 degrees of freedom) corresponding to RMSEA = .05 on an alpha error of .05. Call the function <code>semPower.postHoc</code> with arguments <code>effect = .05</code>, <code>effect.measure = 'RMSEA'</code>, <code>alpha = .05</code>, <code>N = 1000</code>, and <code>df = 100</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ph &lt;-<span class="st"> </span><span class="kw">semPower.postHoc</span>(<span class="dt">effect =</span> .<span class="dv">05</span>, <span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, 
-                        <span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>)
-<span class="kw">summary</span>(ph)
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  semPower: Post-hoc power analysis</span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  F0                       0.250000    </span>
-<span class="co">#&gt;  RMSEA                    0.050000    </span>
-<span class="co">#&gt;  Mc                       0.882497    </span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  df                       100         </span>
-<span class="co">#&gt;  Num Observations         1000        </span>
-<span class="co">#&gt;  NCP                      249.7500    </span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  Critical Chi-Square      124.3421    </span>
-<span class="co">#&gt;  Alpha                    0.050000    </span>
-<span class="co">#&gt;  Beta                     2.903302e-17</span>
-<span class="co">#&gt;  Power (1-beta)           &gt; 0.9999    </span>
-<span class="co">#&gt;  Implied Alpha/Beta Ratio 1.722177e+15</span></code></pre></div>
-<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAZlBMVEUAAAAAADoAAGYAAP8AOpAAZrY6AAA6ADo6AGY6Ojo6kNtGAABmAABmADpmkJBmtrZmtv+QOgCQkGaQtpCQ2/+2ZgC225C2///bkDrb////AAD/tmb/trb/ubn/25D//7b//9v///9gQ5AxAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAIE0lEQVR4nO2di3abOBRFcZs4M6nTcWbMlOCpHf7/J0cPnjFw0MsI+ezVlRCDr+q9roQkZMgqMku29n8gdigIQEEACgJQEICCABQEoCAABQEoCEBBAAoCUBCAggAUBKAgAAUBKAhAQQAKAlAQgIIAFASgIAAFASgIQEEACgJQEICCABQEoCAABQEoCEBBAAoCUBCAggAUBKAgAAUBKAhAQQAKAlAQgIIAFASgIAAFASgIQEEACgJQEICCABQEoCAABQEoCEBBAAoCUBCAggAUBKAgAAUBKAhAQQAKAlAQgIIAFASgIAAFASgIQEEACgJQEMCzoGwzrCXorqU5QEEACgLEJagsw5TmAAUBKAgQlaBS/QtQmgMUBKAgAAUBKAhAQQAKAsQkqGx/UBAF2YSjoP482chOCgLhKAiEoyAQjoJAOAoC4ShoPlzZ+0VBFGQejoJAOAoC4SgIhKMgEC4VQddD9hyk3FQEVVUhBuOv/stNR1DlwVHqgrSib798lpuSoLOwc6w+358+Ro+9Hl7rgyYVTgtSvzctSLTSmTZznvj8SlAhj7kejsMoMzOKqQi6HnYncKwUVKspJpIsZUFv2s9U+lRa0GV/nDvqAQQV84KMM6jsb2xXUN61ItOnedlKZao7qZvrReUmIqjLoHmEI9FUnSctJiwoVLkUBMKlIUi0KbqBcetHpysoYLmPJKhNsuk8S1mQPHUXzWhjnM93VP9SFpQ/fVz2z1U+N232+Q4m1WYEya0tC5Jd5LMYy88MNapKHWFWblKCciFnZqhhVW4ygkTduh6ePq4Hp5nplAWpUQRsZEzLLQebmxa0hM930Jl8cEFFM0j9OlqdnlFMSBDMDnFEq2XxfFBCgnJ4+urNRC+eUUxH0OQcWMdjZ9DXCxVjFE03cXLGLGFBi07wzXB1csA2J0hsb1kQHEXYlZuOoEATZukIMmNqxEZBpuFSEiQq2dNH7rZCKGVB592pkKN5v+uD0hEke4Gy+zc7H+Q0WN24INlRlILmZhQnB6vT5QYS9F3gFMA+g/LpWXuLoUY5/MOfoN5PK6zboGKmu2gxWA0lSOOQRZZnsSybW0UVTQa1XuwNhZowMx2slsO//Ahya300gTqKU4PVyRnFEIIcm2eN7Vhs7rqqTblBBA3+sLRlLCjXtadwXGt/lyo24E6Czk3jXC/StGUFQXaGDAX1Zstmr80bl+tfkJcWyGYBVfOC30vPAQS5h5AYC4JdQLtyvQsaSSArZckKGsGq0kUiqJzf7QkK6hh1cRdBcPWhVbn3EWRDJHPSvgVN+TH3RkGARAVNYX4iezBB5ikUqaAfX18wwtMoQ5GmIJc3fyGQIMPLPjc6nATNJpBpdoWacjVbo+hX0DwxCDKetL+rIDNDQQQZX/bxKshnCxRxBtkb2oAg48s+t4J+WwvCfowq2Z0v+0yEu68goxyLox/kU9ACTFIoNUF+G6Aqko7irYwfvy0NbUSQ4fogf4KWVp7llSyK07xHQYsPXHpkFB3FcUEhm+nlKmPIoBEVQlDQ89hyYugojpiwEmQ4ylp2eAwdxQlBpoaMp8kWvSGCftBYY6MFmRkyP8NvRdDIbiXIJIVs+z8wi9bvKI7miRa0NIecFkODt647o/i9/mg3v7Pe32VZot+ujMcNJ8jmO6v2pYUlio6iW2lhYQYBYugoupYWlNU6ipshjCBbcCl3OcLmw1JQgPdUxouFH0+Q91IoKIYjKMg5hOt78E2YbEtJQxC+qmFdShKCFgw1rEtJQpC39fhb4j4ZtGE8D1bTw/NgNT3imYCIFAoCUBCAggAUBKAgAAUBKAhAQYCQgi5/qBHtOavva9VuLKa4eatpjO6ZaJYhAgq6HtSQX95YRt1cpt1YjLw0MHyrcYzLS32wbYhwgs564lFPAeTP3cZi1C1X5I1pHGI08zLWIYIJEgN+9Z/TNyQSudBumMWRghxiFLUJ6xAh2yAtSOW42Gw3zIIUojY4xMj/zNRjG61DBBekq7v42W4YhVCfzj6GfNiMsPRqHyJyQZV6sLJrDPEfiVeQaxWTn8U1hmh34q1iro20+nSOMYSUeBtph1O0/iwiin0M9xDBBbl0FOWdidUHso+hTOQOIcIL6sYL7cZi5BOWj24xXENwsAqgIAAFASgIQEEACgJQEICCABQEoCAABQEoCEBBAAoCUBCAggAUBKAgAAUBKAhAQQAKAlAQgIIAFASgIAAFAVYWpL5nLheBNd+H7X0vVq3gXf27sesK0l/tzHenvph237HetyqrCqofySlX2d0K0kt4eo+nXIdVBTXfnf7vl8ign3u5TqUVNTAjV6z883JSO9WPelHL9e1vWQkLvZI1CGsK6ju4HkRdKnanLpPOWfdoU7niPtt1gmR2FapiSsVqpfA+kKE1BfUeXqq3RZXrVbXLvm6j62WFnaDr20m/qt6lw4S61UE8gurPPmiLxElOLpjTmvpVTK2griukXk/n+IjhSeKpYmOCKlW9ihtBotH59u++EVTfti09QW0jLc7ofUGqzW0yol373ROk9l32gwwKRVSn+X4GNekl6pd+TbVBuqHSS/ibKnbbQ/BJBB3Fz/emozioYmfVw1ZH6NPU7iRNimbpqJNH7GnVhetRrjzUUMOJdqgxbIPUvvZLgtnPl5N66S9dCXenvO0UFAHHJNsZrLbfHbwvFASgIMB2BK0EBQEoCEBBAAoCUBCAggAUBKAgAAUBKAhAQQAKAlAQgIIAFASgIAAFASgIQEEACgL8DyP6zYWqTj2jAAAAAElFTkSuQmCC" /><!-- --></p>
-<p>The results show that a sample size of N = 1000 is associated with a power larger than &gt; 99.99 % (more precisely, 1 - 2.903302e-17) to reject a wrong model (with df = 100) with an amount of misspecification corresponding to RMSEA = .05 on alpha = .05.</p>
+<p>Use <a href="#ph">semPower.postHoc</a> to determine the actually achieved power with a certain sample size. For example, let’s determine the achieved power with a sample size of N = 1000 to detect misspecifications of a model (involving df = 100 degrees of freedom) corresponding to RMSEA = .05 on an alpha error of .05. Call the function <code>semPower.postHoc</code> with arguments <code>effect = .05</code>, <code>effect.measure = &#39;RMSEA&#39;</code>, <code>alpha = .05</code>, <code>N = 1000</code>, and <code>df = 100</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>ph &lt;-<span class="st"> </span><span class="kw">semPower.postHoc</span>(<span class="dt">effect =</span> <span class="fl">.05</span>, <span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, </span>
+<span id="cb2-2"><a href="#cb2-2"></a>                        <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>)</span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="kw">summary</span>(ph)</span></code></pre></div>
+<p>The results show that a sample size of N = 1000 is associated with a power larger than &gt; 99.99 % (more precisely, 1 - beta = 1 - 2.903302e-17) to reject a wrong model (with df = 100) with an amount of misspecification corresponding to RMSEA = .05 on alpha = .05.</p>
 </div>
 <div id="determine-critical-chi-square-and-implied-alpha-and-beta-compromise-power-analysis" class="section level2">
 <h2>Determine critical chi-square and implied alpha and beta (compromise power analysis)</h2>
-<p>Use <a href="#cp">semPower.compromise</a> to determine the critical chi-square and the implied alpha and beta errors. For example, let’s determine the critical chi-square such that the associated alpha and beta errors are equal, assuming sample size of N = 1000, a model involving df = 100 degrees of freedom and misspecifications corresponding to RMSEA = .05. Call the function <code>semPower.compromise</code> with arguments <code>effect = .05</code>, <code>effect.measure = 'RMSEA'</code>, <code>abratio = 1</code>, <code>N = 1000</code>, and <code>df = 100</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cp &lt;-<span class="st"> </span><span class="kw">semPower.compromise</span>(<span class="dt">effect =</span> .<span class="dv">05</span>, <span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, 
-                           <span class="dt">abratio =</span> <span class="dv">1</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>)
-<span class="kw">summary</span>(cp)
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  semPower: Compromise power analysis</span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  F0                       0.250000    </span>
-<span class="co">#&gt;  RMSEA                    0.050000    </span>
-<span class="co">#&gt;  Mc                       0.882497    </span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  df                       100         </span>
-<span class="co">#&gt;  Num Observations         1000        </span>
-<span class="co">#&gt;  Desired Alpha/Beta Ratio 1.000000    </span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  Critical Chi-Square      192.8233    </span>
-<span class="co">#&gt;  Implied Alpha            7.357816e-08</span>
-<span class="co">#&gt;  Implied Beta             7.357816e-08</span>
-<span class="co">#&gt;  Implied Power (1-beta)   &gt; 0.9999    </span>
-<span class="co">#&gt;  Actual Alpha/Beta Ratio  1.000000</span></code></pre></div>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Use <a href="#cp">semPower.compromise</a> to determine the critical chi-square and the implied alpha and beta errors. For example, let’s determine the critical chi-square such that the associated alpha and beta errors are equal, assuming sample size of N = 1000, a model involving df = 100 degrees of freedom and misspecifications corresponding to RMSEA = .05. Call the function <code>semPower.compromise</code> with arguments <code>effect = .05</code>, <code>effect.measure = &#39;RMSEA&#39;</code>, <code>abratio = 1</code>, <code>N = 1000</code>, and <code>df = 100</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>cp &lt;-<span class="st"> </span><span class="kw">semPower.compromise</span>(<span class="dt">effect =</span> <span class="fl">.05</span>, <span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, </span>
+<span id="cb3-2"><a href="#cb3-2"></a>                           <span class="dt">abratio =</span> <span class="dv">1</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>)</span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">summary</span>(cp)</span></code></pre></div>
 <p>The results show that choosing a critical chi-square of 192.82 is associated with balanced error probabilties alpha = beta = .000000074 when deciding between a correct and a wrong model (with df = 100) with an amount of misspecification corresponding to RMSEA = .05 on alpha = .05 with N = 1000.</p>
 </div>
 <div id="extended-example-define-effect-in-terms-of-model-parameters" class="section level2">
@@ -207,60 +379,135 @@ ap &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span 
 <p>Suppose that a correlation between two factors of r &gt; .9 is considered as implying that these are practically equivalent, so these could be collapsed into a single factor. However, if the correlations between these factors turns out smaller than .9, one might rather prefer a two-factor model. In terms of power analyses, we thus want sufficient power to identify whether the correlation between the factors is <span class="math inline">\(\leq\)</span> .9. The misfit associated with a model assuming a correlation of 1 when, in reality, the true correlation is <span class="math inline">\(\leq\)</span> .9 is supposed to define the magnitude of effect.</p>
 <p>The problem is now that one cannot immediately say how this difference in a model parameter translates to an effect size such as the RMSEA. Instead, any type of power analysis must be performed using the <a href="#cov">H0 and the H1 covariance matrices</a>, obtained by the help of a suitable sem-package, such as <code>lavaan</code>.</p>
 <p>First, a suitable model that describes the true situation in the population is required. We need to define the value of each single (non-zero) parameter, so we need to specify each loading, each residual variance, the variance of the factors as well as their covariance. Note that the magnitude of effect (and thus power) does not only depend on the correlation between the factors, but also varies with other parameters of the model, such as the loading magnitude, so some reasonable guess concerning the latter required. Let us assume that the standardized loadings vary between .4 and .8. Importantly, I define that two factors exists that correlate by .9.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lavaan)
-
-<span class="co"># define (true) population model</span>
-model.pop &lt;-<span class="st"> '</span>
-<span class="st"># define relations between factors and items in terms of loadings</span>
-<span class="st">f1 =~ .7*x1 + .7*x2 + .5*x3 + .5*x4</span>
-<span class="st">f2 =~ .8*x5 + .6*x6 + .6*x7 + .4*x8</span>
-<span class="st"># define unique variances of the items to be equal to 1-loading^2, so that the loadings above are in a standardized metric</span>
-<span class="st">x1 ~~ .51*x1</span>
-<span class="st">x2 ~~ .51*x2</span>
-<span class="st">x3 ~~ .75*x3</span>
-<span class="st">x4 ~~ .75*x4</span>
-<span class="st">x5 ~~ .36*x5</span>
-<span class="st">x6 ~~ .64*x6</span>
-<span class="st">x7 ~~ .64*x7</span>
-<span class="st">x8 ~~ .84*x8</span>
-<span class="st"># define variances of f1 and f2 to be 1</span>
-<span class="st">f1 ~~ 1*f1   </span>
-<span class="st">f2 ~~ 1*f2   </span>
-<span class="st"># define covariance (=correlation, because factor variances are 1) between the factors to be .9</span>
-<span class="st">f1 ~~ 0.9*f2 </span>
-<span class="st">'</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">library</span>(lavaan)</span>
+<span id="cb4-2"><a href="#cb4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co"># define (true) population model</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>model.pop &lt;-<span class="st"> &#39;</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="st"># define relations between factors and items in terms of loadings</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="st">f1 =~ .7*x1 + .7*x2 + .5*x3 + .5*x4</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="st">f2 =~ .8*x5 + .6*x6 + .6*x7 + .4*x8</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="st"># define unique variances of the items to be equal to 1-loading^2, </span></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="st"># so that the loadings above are in a standardized metric</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a><span class="st">x1 ~~ .51*x1</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="st">x2 ~~ .51*x2</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="st">x3 ~~ .75*x3</span></span>
+<span id="cb4-13"><a href="#cb4-13"></a><span class="st">x4 ~~ .75*x4</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a><span class="st">x5 ~~ .36*x5</span></span>
+<span id="cb4-15"><a href="#cb4-15"></a><span class="st">x6 ~~ .64*x6</span></span>
+<span id="cb4-16"><a href="#cb4-16"></a><span class="st">x7 ~~ .64*x7</span></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="st">x8 ~~ .84*x8</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a><span class="st"># define variances of f1 and f2 to be 1</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a><span class="st">f1 ~~ 1*f1   </span></span>
+<span id="cb4-20"><a href="#cb4-20"></a><span class="st">f2 ~~ 1*f2   </span></span>
+<span id="cb4-21"><a href="#cb4-21"></a><span class="st"># define covariance (=correlation, because factor variances are 1) between the factors to be .9</span></span>
+<span id="cb4-22"><a href="#cb4-22"></a><span class="st">f1 ~~ 0.9*f2 </span></span>
+<span id="cb4-23"><a href="#cb4-23"></a><span class="st">&#39;</span></span></code></pre></div>
 <p>Using the model string above, we can now obtain the associated variance-covariance matrix defining the true state in the population.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># population covariance matrix</span>
-cov.pop &lt;-<span class="st"> </span><span class="kw">fitted</span>(<span class="kw">sem</span>(model.pop))<span class="op">$</span>cov</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># population covariance matrix</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>cov.pop &lt;-<span class="st"> </span><span class="kw">fitted</span>(<span class="kw">sem</span>(model.pop))<span class="op">$</span>cov</span></code></pre></div>
 <p>It is a good idea to check whether the model string actually defined all parameters as we expected. To verifiy, we can just fit the true model to the population covariance matrix which should yield a perfect fit and give the same parameter estimates we used in the definition of the model string.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># sanity check</span>
-model.h1 &lt;-<span class="st"> '</span>
-<span class="st">f1 =~ x1 + x2 + x3 + x4</span>
-<span class="st">f2 =~ x5 + x6 + x7 + x8</span>
-<span class="st">'</span>
-<span class="kw">summary</span>(<span class="kw">sem</span>(model.h1, <span class="dt">sample.cov =</span> cov.pop, <span class="dt">sample.nobs =</span> <span class="dv">1000</span>), <span class="dt">stand =</span> T, <span class="dt">fit =</span> T)</code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co"># sanity check</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>model.h1 &lt;-<span class="st"> &#39;</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="st">f1 =~ x1 + x2 + x3 + x4</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="st">f2 =~ x5 + x6 + x7 + x8</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="st">&#39;</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="kw">summary</span>(<span class="kw">sem</span>(model.h1, <span class="dt">sample.cov =</span> cov.pop, <span class="dt">sample.nobs =</span> <span class="dv">1000</span>, <span class="dt">sample.cov.rescale =</span> F), <span class="dt">stand =</span> T, <span class="dt">fit =</span> T)</span></code></pre></div>
 <p>Having obtained the population covariance matrix, we now need to define and estimate the analysis model. The analysis model should make at least one restriction which is factually wrong and thereby defines the effect of interest, in the present case the restriction that the two factors correlate to 1.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># define (wrong) analysis model</span>
-model.h0 &lt;-<span class="st"> '</span>
-<span class="st">f1 =~ NA*x1 + x2 + x3 + x4</span>
-<span class="st">f2 =~ NA*x5 + x6 + x7 + x8</span>
-<span class="st"># define variances of f1 and f2 to be 1</span>
-<span class="st">f1 ~~ 1*f1   </span>
-<span class="st">f2 ~~ 1*f2   </span>
-<span class="st"># set correlation between the factors to 1</span>
-<span class="st">f1 ~~ 1*f2</span>
-<span class="st">'</span> 
-<span class="co"># fit analysis model to population data</span>
-fit.h0 &lt;-<span class="st"> </span><span class="kw">sem</span>(model.h0, <span class="dt">sample.cov =</span> cov.pop, <span class="dt">sample.nobs =</span> <span class="dv">1000</span>, <span class="dt">likelihood=</span><span class="st">'wishart'</span>)</code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co"># define (wrong) analysis model</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>model.h0 &lt;-<span class="st"> &#39;</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="st">f1 =~ NA*x1 + x2 + x3 + x4</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="st">f2 =~ NA*x5 + x6 + x7 + x8</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="st"># define variances of f1 and f2 to be 1</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="st">f1 ~~ 1*f1   </span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="st">f2 ~~ 1*f2   </span></span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="st"># set correlation between the factors to 1</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a><span class="st">f1 ~~ 1*f2</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="st">&#39;</span> </span>
+<span id="cb7-11"><a href="#cb7-11"></a><span class="co"># fit analysis model to population data; note the sample.nobs are arbitrary</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a>fit.h0 &lt;-<span class="st"> </span><span class="kw">sem</span>(model.h0, <span class="dt">sample.cov =</span> cov.pop, <span class="dt">sample.nobs =</span> <span class="dv">1000</span>, <span class="dt">sample.cov.rescale =</span> F, <span class="dt">likelihood=</span><span class="st">&#39;wishart&#39;</span>)</span></code></pre></div>
 <p>Any type of power-analysis can now be performed using the model-implied covariance matrix along with the population covariance matrix as arguments. For example, to determine the required sample size use <a href="#ap">semPower.aPriori</a> with <code>SigmaHat = cov.h0</code>, <code>Sigma = cov.pop</code>, <code>alpha = .05</code>, <code>power = .80</code>, and <code>df = df</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># model implied covariance matrix</span>
-cov.h0 &lt;-<span class="st"> </span><span class="kw">fitted</span>(fit.h0)<span class="op">$</span>cov
-df &lt;-<span class="st"> </span>fit.h0<span class="op">@</span>test[[<span class="dv">1</span>]]<span class="op">$</span>df
-<span class="co"># perform power analysis</span>
-ap5 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">SigmaHat =</span> cov.h0, <span class="dt">Sigma =</span> cov.pop, 
-                        <span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">power =</span> .<span class="dv">95</span>, <span class="dt">df =</span> df)
-<span class="kw">summary</span>(ap5)</code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="co"># model implied covariance matrix</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>cov.h0 &lt;-<span class="st"> </span><span class="kw">fitted</span>(fit.h0)<span class="op">$</span>cov</span>
+<span id="cb8-3"><a href="#cb8-3"></a>df &lt;-<span class="st"> </span>fit.h0<span class="op">@</span>test[[<span class="dv">1</span>]]<span class="op">$</span>df</span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="co"># perform power analysis</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a>ap5 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">SigmaHat =</span> cov.h0, <span class="dt">Sigma =</span> cov.pop, </span>
+<span id="cb8-6"><a href="#cb8-6"></a>                        <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">power =</span> <span class="fl">.95</span>, <span class="dt">df =</span> df)</span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="kw">summary</span>(ap5)</span></code></pre></div>
 <p>The output (which is omitted here) shows that N = 1258 observations are required to detect a correlation between the factors <span class="math inline">\(\leq\)</span> .9 with a power of 95% on alpha = .05. The output also shows various effect-sizes as implied by the specified covariance matrices. In the population, fitting a model assuming the two factors correlate by 1 when they actually correlate by .9 leads to a population minimum of the ML-fitting function of F0 = 0.0244, which amounts to model misfit corresponding to RMSEA = 0.035 or SRMR = 0.016.</p>
+</div>
+<div id="extended-example-power-to-detect-invariance-constraints-in-a-multiple-group-model" class="section level2">
+<h2>Extended example: Power to detect invariance constraints in a multiple group model</h2>
+<p>Suppose we fit a model to two groups and are interested in whether the loadings are invariant across groups. To test this hypothesis, a model with freely estimated loadings would be compared against a model restricting the loadings to be equal across groups (metric invariance model). If the the fit of the latter model is significantly worse, this supports the conclusion that at least one loading systematically differs across groups. In terms of power analyses, the misfit associated with a model assuming equal loadings across groups when, in reality, at least one loading differs, defines the magnitude of effect, which we want to detect with a sufficient power.</p>
+<p>Again, we need to setup a model describing the true situation in the population to obtain the magnitude of effect. Because we have a two-group model, the model needs to be specified for both groups. Let’s assume we have a two factor model with each factor being indicated by three manifest variables. Let’s further assume that the loading of <code>x2</code> differs across groups:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">library</span>(lavaan)</span>
+<span id="cb9-2"><a href="#cb9-2"></a></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="co"># population model group 1</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>model.pop.g1 &lt;-<span class="st"> &#39;</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="st">f1 =~ .8*x1 + .7*x2 + .6*x3</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="st">f2 =~ .7*x4 + .6*x5 + .5*x6</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="st">x1 ~~ .36*x1</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="st">x2 ~~ .51*x2</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a><span class="st">x3 ~~ .64*x3</span></span>
+<span id="cb9-10"><a href="#cb9-10"></a><span class="st">x4 ~~ .51*x4</span></span>
+<span id="cb9-11"><a href="#cb9-11"></a><span class="st">x5 ~~ .64*x5</span></span>
+<span id="cb9-12"><a href="#cb9-12"></a><span class="st">x6 ~~ .75*x6</span></span>
+<span id="cb9-13"><a href="#cb9-13"></a><span class="st">f1 ~~ 1*f1</span></span>
+<span id="cb9-14"><a href="#cb9-14"></a><span class="st">f2 ~~ 1*f2</span></span>
+<span id="cb9-15"><a href="#cb9-15"></a><span class="st">f1 ~~ 0.5*f2</span></span>
+<span id="cb9-16"><a href="#cb9-16"></a><span class="st">&#39;</span></span>
+<span id="cb9-17"><a href="#cb9-17"></a><span class="co"># population model group 2</span></span>
+<span id="cb9-18"><a href="#cb9-18"></a>model.pop.g2 &lt;-<span class="st"> &#39;</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a><span class="st">f1 =~ .8*x1 + .4*x2 + .6*x3</span></span>
+<span id="cb9-20"><a href="#cb9-20"></a><span class="st">f2 =~ .7*x4 + .6*x5 + .5*x6</span></span>
+<span id="cb9-21"><a href="#cb9-21"></a><span class="st">x1 ~~ .36*x1</span></span>
+<span id="cb9-22"><a href="#cb9-22"></a><span class="st">x2 ~~ .84*x2</span></span>
+<span id="cb9-23"><a href="#cb9-23"></a><span class="st">x3 ~~ .64*x3</span></span>
+<span id="cb9-24"><a href="#cb9-24"></a><span class="st">x4 ~~ .51*x4</span></span>
+<span id="cb9-25"><a href="#cb9-25"></a><span class="st">x5 ~~ .64*x5</span></span>
+<span id="cb9-26"><a href="#cb9-26"></a><span class="st">x6 ~~ .75*x6</span></span>
+<span id="cb9-27"><a href="#cb9-27"></a><span class="st">f1 ~~ 1*f1</span></span>
+<span id="cb9-28"><a href="#cb9-28"></a><span class="st">f2 ~~ 1*f2</span></span>
+<span id="cb9-29"><a href="#cb9-29"></a><span class="st">f1 ~~ 0.5*f2</span></span>
+<span id="cb9-30"><a href="#cb9-30"></a><span class="st">&#39;</span></span></code></pre></div>
+<p>Note that the models are almost identical, with the exception that the loading of <code>x2</code> is .7 in the first group, but .4 in the second group. Based on the the model strings above, we can obtain the associated variance-covariance matrices for both groups:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># population covariance matrices</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>cov.pop.g1 &lt;-<span class="st"> </span><span class="kw">fitted</span>(<span class="kw">sem</span>(model.pop.g1))<span class="op">$</span>cov</span>
+<span id="cb10-3"><a href="#cb10-3"></a>cov.pop.g2 &lt;-<span class="st"> </span><span class="kw">fitted</span>(<span class="kw">sem</span>(model.pop.g2))<span class="op">$</span>cov</span></code></pre></div>
+<p>Next, we define and estimate the analysis model. The model of interest is a metric invariance model, i.e., a multiple group model restricting the loadings to be equal across groups. By fitting the model to the population covariance matrices obtained above (note the <code>group.equal = &#39;loadings&#39;</code> argument in the <code>lavaan</code> call) the model-implied covariance matrices for each group is obtained:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># define analysis model</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>model.h0 &lt;-<span class="st"> &#39;</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="st">f1 =~ x1 + x2 + x3</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="st">f2 =~ x4 + x5 + x6</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a><span class="st">&#39;</span> </span>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="co"># fit analysis model to population data; note the sample.nobs are arbitrary</span></span>
+<span id="cb11-7"><a href="#cb11-7"></a>fit.h0 &lt;-<span class="st"> </span><span class="kw">sem</span>(model.h0, <span class="dt">sample.cov =</span> <span class="kw">list</span>(cov.pop.g1, cov.pop.g2), </span>
+<span id="cb11-8"><a href="#cb11-8"></a>              <span class="dt">sample.nobs =</span> <span class="kw">list</span>(<span class="dv">1000</span>, <span class="dv">1000</span>), <span class="dt">sample.cov.rescale =</span> F,</span>
+<span id="cb11-9"><a href="#cb11-9"></a>              <span class="dt">group.equal =</span> <span class="st">&#39;loadings&#39;</span>, <span class="dt">likelihood=</span><span class="st">&#39;wishart&#39;</span>)</span>
+<span id="cb11-10"><a href="#cb11-10"></a><span class="co"># get model implied covariance matrices</span></span>
+<span id="cb11-11"><a href="#cb11-11"></a>cov.h0.g1 &lt;-<span class="st"> </span><span class="kw">fitted</span>(fit.h0)<span class="op">$</span><span class="st">`</span><span class="dt">Group 1</span><span class="st">`</span><span class="op">$</span>cov</span>
+<span id="cb11-12"><a href="#cb11-12"></a>cov.h0.g2 &lt;-<span class="st"> </span><span class="kw">fitted</span>(fit.h0)<span class="op">$</span><span class="st">`</span><span class="dt">Group 2</span><span class="st">`</span><span class="op">$</span>cov</span>
+<span id="cb11-13"><a href="#cb11-13"></a><span class="co"># df of metric invariance model</span></span>
+<span id="cb11-14"><a href="#cb11-14"></a>df &lt;-<span class="st"> </span>fit.h0<span class="op">@</span>test[[<span class="dv">1</span>]]<span class="op">$</span>df</span>
+<span id="cb11-15"><a href="#cb11-15"></a><span class="co"># obtain baseline df (no invariance constraints)</span></span>
+<span id="cb11-16"><a href="#cb11-16"></a>fit.bl &lt;-<span class="st"> </span><span class="kw">sem</span>(model.h0, <span class="dt">sample.cov =</span> <span class="kw">list</span>(cov.pop.g1, cov.pop.g2), </span>
+<span id="cb11-17"><a href="#cb11-17"></a>              <span class="dt">sample.nobs =</span> <span class="kw">list</span>(<span class="dv">1000</span>, <span class="dv">1000</span>), <span class="dt">sample.cov.rescale=</span>F,</span>
+<span id="cb11-18"><a href="#cb11-18"></a>              <span class="dt">likelihood=</span><span class="st">&#39;wishart&#39;</span>)</span>
+<span id="cb11-19"><a href="#cb11-19"></a>df.bl &lt;-<span class="st"> </span>fit.bl<span class="op">@</span>test[[<span class="dv">1</span>]]<span class="op">$</span>df</span>
+<span id="cb11-20"><a href="#cb11-20"></a><span class="co"># difference in df</span></span>
+<span id="cb11-21"><a href="#cb11-21"></a>df.diff &lt;-<span class="st"> </span>df <span class="op">-</span><span class="st"> </span>df.bl</span></code></pre></div>
+<p>We also obtain the difference in the degrees of freedom (<code>df.diff</code>) between the metric invariance model and the model without invariance constraints (configural invariance model), because the metric invariance model is usually compared to the configural invariance model (rather than to the saturated model). We can now perform any type of power-analysis by using the population and the model-implied covariance matrices as obtained above. In multiple group models, the arguments <code>SigmaHat</code> and <code>Sigma</code> are lists containing the associated matrices for each group. In addition, <code>N</code> also needs to be a list specifying the sample size for each group. In a priori power analyses, <code>N</code> determines the sample size weights for each group, so setting <code>N = list(1, 1)</code> assigns the same sample size to both groups.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="co"># perform a priori power analysis</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>ap6 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">SigmaHat =</span> <span class="kw">list</span>(cov.h0.g1, cov.h0.g2), </span>
+<span id="cb12-3"><a href="#cb12-3"></a>                        <span class="dt">Sigma =</span> <span class="kw">list</span>(cov.pop.g1, cov.pop.g2), </span>
+<span id="cb12-4"><a href="#cb12-4"></a>                        <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">beta =</span> <span class="fl">.20</span>, <span class="dt">N =</span> <span class="kw">list</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="dt">df =</span> df.diff)</span>
+<span id="cb12-5"><a href="#cb12-5"></a></span>
+<span id="cb12-6"><a href="#cb12-6"></a><span class="kw">summary</span>(ap6)</span></code></pre></div>
+<p>The output (which is omitted here) shows that N = 778 observations (n = 389 by group) are required to detect the lack of metric invariance with a power of 80% on alpha = .05.</p>
+<p>Alternatively, <code>semPower</code> can also compute power in multiple group settings when the effect contribution of each group to the total effect of interest is provided. In the present example, F0 is 0.01102 and 0.01979 in the first and second group, respectively. Computing a post-hoc power analysis with <code>effect = list(0.01102, 0.01979)</code>, <code>effect.measure = &#39;F0&#39;</code>, and <code>N = list(389, 389)</code> thus replicates the above result in showing that the power on alpha = .05 is approximately 80%.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="co"># perform post-hoc power analysis</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>ph6 &lt;-<span class="st"> </span><span class="kw">semPower.postHoc</span>(<span class="dt">effect =</span> <span class="kw">list</span>(<span class="fl">0.01102</span>, <span class="fl">0.01979</span>), <span class="dt">effect.measure =</span> <span class="st">&#39;F0&#39;</span>, </span>
+<span id="cb13-3"><a href="#cb13-3"></a>                        <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">N =</span> <span class="kw">list</span>(<span class="dv">389</span>, <span class="dv">389</span>), <span class="dt">df =</span> df.diff)</span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="kw">summary</span>(ph6)</span></code></pre></div>
 <p> </p>
 </div>
 </div>
@@ -321,8 +568,8 @@ ap5 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span
 <div id="srmr" class="section level3">
 <h3>SRMR</h3>
 <p>The Standardized-Root-Mean-Square Residual (SRMR) is a measure of the (root of the) average (squared) difference between the (standardized) model-implied and population covariance matrices, so that it ranges from 0 to 1 with lower values indicating better fit. Let <span class="math inline">\(E_0\)</span> be the difference between the model-implied and the population covariance matrix, <span class="math inline">\(E_0 = \Sigma - \hat{\Sigma}\)</span>, <span class="math inline">\(vech\)</span> denote the vectorization transformation, and <span class="math inline">\(Q\)</span> be a diagonal matrix of dimension <span class="math inline">\(.5p(p+1)\)</span> containing the inverse of the product of standard deviations of observed variables <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>. Then, the SRMR can be defined as</p>
-<p><span class="math display">\[SRMR = \sqrt{\dfrac{1}{.5p(p+1)}vech(E_0) \cdot Q \cdot vech(E_0)'}\]</span></p>
-<p>The relation of the residual matrix <span class="math inline">\(E_0\)</span> to <span class="math inline">\(F_0\)</span> is complex and depends on the model-implied covariance matrix, so the SRMR is generally not suited to define an effect in terms of <span class="math inline">\(F_0\)</span> (based on ML estimation): <span class="math display">\[F_0 = -\ln|I + \hat{\Sigma}^{-.5} E_0 \hat{\Sigma}^{-.5}|\]</span></p>
+<p><span class="math display">\[SRMR = \sqrt{\dfrac{1}{.5p(p+1)}vech(E_0) \cdot Q \cdot vech(E_0)&#39;}\]</span></p>
+<p>The relation of the residual matrix <span class="math inline">\(E_0\)</span> to <span class="math inline">\(F_0\)</span> is complex and depends on the model-implied covariance matrix, so the SRMR is not well suited to define an effect in terms of <span class="math inline">\(F_0\)</span> (based on ML estimation): <span class="math display">\[F_0 = -\ln|I + \hat{\Sigma}^{-.5} E_0 \hat{\Sigma}^{-.5}|\]</span></p>
 </div>
 <div id="cfi" class="section level3">
 <h3>CFI</h3>
@@ -342,57 +589,57 @@ ap5 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span
 <h2>A-Priori: Determine required N, given alpha, beta, effect, and df</h2>
 <p>The purpose of a-priori power analyses is to determine the required sample size to detect an effect, given a specified alpha error. In the language of structural equation modeling, an a-priori power analysis asks: How many observations do I need to falsify my model with a probability of X% (power), if it is actually wrong (to the extent as defined by the chosen effect)?</p>
 <p>Performing an a-priori power analyses requires the specification of an alpha error, the desired power (or, equivalently the acceptable beta error), the type and magnitude of effect, and the model df. Depending on the chosen effect-size measure, it may also be required to define the number of observed variables.</p>
-<p>Suppose, we want the required sample size to detect misspecifications of a model (involving df = 100 degrees of freedom) with a power of 80% on an alpha error of .05., where the amount of misfit corresponds to RMSEA = .05. After loading the <code>semPower</code> package, we call the function <code>semPower.aPriori</code> with arguments <code>effect = .08</code>, <code>effect.measure = 'RMSEA'</code>, <code>alpha = .05</code>, <code>power = .80</code>, and <code>df = 100</code>, and store the results in a list called <code>ap1</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(semPower)
-ap1 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">effect =</span> .<span class="dv">05</span>, <span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, 
-                        <span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">power =</span> .<span class="dv">80</span>, <span class="dt">df =</span> <span class="dv">100</span>)</code></pre></div>
+<p>Suppose, we want the required sample size to detect misspecifications of a model (involving df = 100 degrees of freedom) with a power of 80% on an alpha error of .05., where the amount of misfit corresponds to RMSEA = .05. After loading the <code>semPower</code> package, we call the function <code>semPower.aPriori</code> with arguments <code>effect = .08</code>, <code>effect.measure = &#39;RMSEA&#39;</code>, <code>alpha = .05</code>, <code>power = .80</code>, and <code>df = 100</code>, and store the results in a list called <code>ap1</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">library</span>(semPower)</span>
+<span id="cb14-2"><a href="#cb14-2"></a>ap1 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">effect =</span> <span class="fl">.05</span>, <span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, </span>
+<span id="cb14-3"><a href="#cb14-3"></a>                        <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">df =</span> <span class="dv">100</span>)</span></code></pre></div>
 <p>Calling the <code>summary</code> method on <code>ap1</code> prints the results and a figure of the associated central and non-central chi-squared distributions.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(ap1)
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  semPower: A-priori power analysis</span>
-<span class="co">#&gt;                                    </span>
-<span class="co">#&gt;  F0                        0.250000</span>
-<span class="co">#&gt;  RMSEA                     0.050000</span>
-<span class="co">#&gt;  Mc                        0.882497</span>
-<span class="co">#&gt;                                    </span>
-<span class="co">#&gt;  df                        100     </span>
-<span class="co">#&gt;  Required Num Observations 164     </span>
-<span class="co">#&gt;                                    </span>
-<span class="co">#&gt;  Critical Chi-Square       124.3421</span>
-<span class="co">#&gt;  NCP                       40.75000</span>
-<span class="co">#&gt;  Alpha                     0.050000</span>
-<span class="co">#&gt;  Beta                      0.197211</span>
-<span class="co">#&gt;  Power (1-beta)            0.802789</span>
-<span class="co">#&gt;  Implied Alpha/Beta Ratio  0.253535</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">summary</span>(ap1)</span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="co">#&gt; </span></span>
+<span id="cb15-3"><a href="#cb15-3"></a><span class="co">#&gt;  semPower: A-priori power analysis</span></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="co">#&gt;                                    </span></span>
+<span id="cb15-5"><a href="#cb15-5"></a><span class="co">#&gt;  F0                        0.250000</span></span>
+<span id="cb15-6"><a href="#cb15-6"></a><span class="co">#&gt;  RMSEA                     0.050000</span></span>
+<span id="cb15-7"><a href="#cb15-7"></a><span class="co">#&gt;  Mc                        0.882497</span></span>
+<span id="cb15-8"><a href="#cb15-8"></a><span class="co">#&gt;                                    </span></span>
+<span id="cb15-9"><a href="#cb15-9"></a><span class="co">#&gt;  df                        100     </span></span>
+<span id="cb15-10"><a href="#cb15-10"></a><span class="co">#&gt;  Required Num Observations 164     </span></span>
+<span id="cb15-11"><a href="#cb15-11"></a><span class="co">#&gt;                                    </span></span>
+<span id="cb15-12"><a href="#cb15-12"></a><span class="co">#&gt;  Critical Chi-Square       124.3421</span></span>
+<span id="cb15-13"><a href="#cb15-13"></a><span class="co">#&gt;  NCP                       40.75000</span></span>
+<span id="cb15-14"><a href="#cb15-14"></a><span class="co">#&gt;  Alpha                     0.050000</span></span>
+<span id="cb15-15"><a href="#cb15-15"></a><span class="co">#&gt;  Beta                      0.197211</span></span>
+<span id="cb15-16"><a href="#cb15-16"></a><span class="co">#&gt;  Power (1-beta)            0.802789</span></span>
+<span id="cb15-17"><a href="#cb15-17"></a><span class="co">#&gt;  Implied Alpha/Beta Ratio  0.253535</span></span></code></pre></div>
 <p><img src="data:image/png;base64,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" /><!-- --></p>
 <p>This shows that <span class="math inline">\(N = 164\)</span> yields a power of approximately 80% to detect the specified effect. The output further shows the <code>Critical Chi-Square</code>, the non-centrality parameter (<code>NCP</code>), and the ratio between the error probabilities (<code>Implied Alpha/Beta ratio</code>). In this example, the ratio between alpha and beta is 0.25, showing that committing an beta error is four-times as likely as committing an alpha error. This is obviously a consequence of the chosen input parameters, since a power (1 - beta) of .80 implies an beta error of .20, which is four times the chosen alpha error of .05.</p>
 <p><code>semPower</code> also converts the chosen effect into other effect size measures, here into F0 and Mc: An RMSEA of .05 (based on df = 100) corresponds to F0 = 0.250 and Mc = .882. If we would also be interested in obtaining the associated GFI and AGFI, the number of variables needs to be provided. Let’s assume our model involves 20 observed variables. We repeat the call above, this time including the argument <code>p = 20</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap2 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">effect =</span> .<span class="dv">05</span>, <span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, 
-                        <span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">power =</span> .<span class="dv">80</span>, <span class="dt">df =</span> <span class="dv">100</span>, <span class="dt">p =</span> <span class="dv">20</span>)
-<span class="kw">summary</span>(ap2)
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  semPower: A-priori power analysis</span>
-<span class="co">#&gt;                                    </span>
-<span class="co">#&gt;  F0                        0.250000</span>
-<span class="co">#&gt;  RMSEA                     0.050000</span>
-<span class="co">#&gt;  Mc                        0.882497</span>
-<span class="co">#&gt;  GFI                       0.975610</span>
-<span class="co">#&gt;  AGFI                      0.948780</span>
-<span class="co">#&gt;                                    </span>
-<span class="co">#&gt;  df                        100     </span>
-<span class="co">#&gt;  Required Num Observations 164     </span>
-<span class="co">#&gt;                                    </span>
-<span class="co">#&gt;  Critical Chi-Square       124.3421</span>
-<span class="co">#&gt;  NCP                       40.75000</span>
-<span class="co">#&gt;  Alpha                     0.050000</span>
-<span class="co">#&gt;  Beta                      0.197211</span>
-<span class="co">#&gt;  Power (1-beta)            0.802789</span>
-<span class="co">#&gt;  Implied Alpha/Beta Ratio  0.253535</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>ap2 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">effect =</span> <span class="fl">.05</span>, <span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, </span>
+<span id="cb16-2"><a href="#cb16-2"></a>                        <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">df =</span> <span class="dv">100</span>, <span class="dt">p =</span> <span class="dv">20</span>)</span>
+<span id="cb16-3"><a href="#cb16-3"></a><span class="kw">summary</span>(ap2)</span>
+<span id="cb16-4"><a href="#cb16-4"></a><span class="co">#&gt; </span></span>
+<span id="cb16-5"><a href="#cb16-5"></a><span class="co">#&gt;  semPower: A-priori power analysis</span></span>
+<span id="cb16-6"><a href="#cb16-6"></a><span class="co">#&gt;                                    </span></span>
+<span id="cb16-7"><a href="#cb16-7"></a><span class="co">#&gt;  F0                        0.250000</span></span>
+<span id="cb16-8"><a href="#cb16-8"></a><span class="co">#&gt;  RMSEA                     0.050000</span></span>
+<span id="cb16-9"><a href="#cb16-9"></a><span class="co">#&gt;  Mc                        0.882497</span></span>
+<span id="cb16-10"><a href="#cb16-10"></a><span class="co">#&gt;  GFI                       0.975610</span></span>
+<span id="cb16-11"><a href="#cb16-11"></a><span class="co">#&gt;  AGFI                      0.948780</span></span>
+<span id="cb16-12"><a href="#cb16-12"></a><span class="co">#&gt;                                    </span></span>
+<span id="cb16-13"><a href="#cb16-13"></a><span class="co">#&gt;  df                        100     </span></span>
+<span id="cb16-14"><a href="#cb16-14"></a><span class="co">#&gt;  Required Num Observations 164     </span></span>
+<span id="cb16-15"><a href="#cb16-15"></a><span class="co">#&gt;                                    </span></span>
+<span id="cb16-16"><a href="#cb16-16"></a><span class="co">#&gt;  Critical Chi-Square       124.3421</span></span>
+<span id="cb16-17"><a href="#cb16-17"></a><span class="co">#&gt;  NCP                       40.75000</span></span>
+<span id="cb16-18"><a href="#cb16-18"></a><span class="co">#&gt;  Alpha                     0.050000</span></span>
+<span id="cb16-19"><a href="#cb16-19"></a><span class="co">#&gt;  Beta                      0.197211</span></span>
+<span id="cb16-20"><a href="#cb16-20"></a><span class="co">#&gt;  Power (1-beta)            0.802789</span></span>
+<span id="cb16-21"><a href="#cb16-21"></a><span class="co">#&gt;  Implied Alpha/Beta Ratio  0.253535</span></span></code></pre></div>
 <p><img src="data:image/png;base64,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" /><!-- --></p>
 <p>We now also get the GFI and AGFI equivalents of RMSEA = .05, assuming df = 100 and p = 20.</p>
 <p>Instead of specifying the desired power, it is of course also possible to specify the accepted beta error. For example, calling</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap3 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">effect =</span> .<span class="dv">05</span>, <span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, 
-                        <span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">beta =</span> .<span class="dv">20</span>, <span class="dt">df =</span> <span class="dv">100</span>, <span class="dt">p =</span> <span class="dv">20</span>)</code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>ap3 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span class="dt">effect =</span> <span class="fl">.05</span>, <span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, </span>
+<span id="cb17-2"><a href="#cb17-2"></a>                        <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">beta =</span> <span class="fl">.20</span>, <span class="dt">df =</span> <span class="dv">100</span>, <span class="dt">p =</span> <span class="dv">20</span>)</span></code></pre></div>
 <p>gives the same output as above.</p>
 <p>If you are interested in how power changes for a range of sample sizes, it is useful to request a <a href="#plots">power plot</a>, as described in detail <a href="#plots">below</a>.</p>
 <p> </p>
@@ -402,26 +649,26 @@ ap1 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span
 <h2>Post-hoc: Determine achieved power, given alpha, N, effect, and df</h2>
 <p>The purpose of post-hoc power analyses is to determine the actually achieved power to detect a specified effect with given sample size on a certain alpha error. In the language of structural equation modeling, a post-hoc power analysis asks: With my sample at hand, how large is the probability (power) to falsify my model if it is actually wrong (at least to the extent as defined by the chosen effect)?</p>
 <p>Performing a post-hoc power analyses requires the specification of an alpha error, the sample size, the type and magnitude of effect, and the model df. Again, depending on the chosen effect-size measure, it may also be required to define the number of observed variables.</p>
-<p>Suppose, we want the achieved power with a sample size of <span class="math inline">\(N = 1000\)</span> to detect misspecifications of a model (involving <span class="math inline">\(df = 100\)</span> degrees of freedom) on an alpha error of .05., where the amount of misfit corresponds to RMSEA = .05. We call the function <code>semPower.postHoc</code> with arguments <code>effect = .08</code>, <code>effect.measure = 'RMSEA'</code>, <code>alpha = .05</code>, <code>N = 1000</code>, and <code>df = 100</code>, and store the results in a list called <code>ph1</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ph1 &lt;-<span class="st"> </span><span class="kw">semPower.postHoc</span>(<span class="dt">effect =</span> .<span class="dv">05</span>, <span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, 
-                        <span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>)
-<span class="kw">summary</span>(ph1)
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  semPower: Post-hoc power analysis</span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  F0                       0.250000    </span>
-<span class="co">#&gt;  RMSEA                    0.050000    </span>
-<span class="co">#&gt;  Mc                       0.882497    </span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  df                       100         </span>
-<span class="co">#&gt;  Num Observations         1000        </span>
-<span class="co">#&gt;  NCP                      249.7500    </span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  Critical Chi-Square      124.3421    </span>
-<span class="co">#&gt;  Alpha                    0.050000    </span>
-<span class="co">#&gt;  Beta                     2.903302e-17</span>
-<span class="co">#&gt;  Power (1-beta)           &gt; 0.9999    </span>
-<span class="co">#&gt;  Implied Alpha/Beta Ratio 1.722177e+15</span></code></pre></div>
+<p>Suppose, we want the achieved power with a sample size of <span class="math inline">\(N = 1000\)</span> to detect misspecifications of a model (involving <span class="math inline">\(df = 100\)</span> degrees of freedom) on an alpha error of .05., where the amount of misfit corresponds to RMSEA = .05. We call the function <code>semPower.postHoc</code> with arguments <code>effect = .08</code>, <code>effect.measure = &#39;RMSEA&#39;</code>, <code>alpha = .05</code>, <code>N = 1000</code>, and <code>df = 100</code>, and store the results in a list called <code>ph1</code>.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>ph1 &lt;-<span class="st"> </span><span class="kw">semPower.postHoc</span>(<span class="dt">effect =</span> <span class="fl">.05</span>, <span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, </span>
+<span id="cb18-2"><a href="#cb18-2"></a>                        <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>)</span>
+<span id="cb18-3"><a href="#cb18-3"></a><span class="kw">summary</span>(ph1)</span>
+<span id="cb18-4"><a href="#cb18-4"></a><span class="co">#&gt; </span></span>
+<span id="cb18-5"><a href="#cb18-5"></a><span class="co">#&gt;  semPower: Post-hoc power analysis</span></span>
+<span id="cb18-6"><a href="#cb18-6"></a><span class="co">#&gt;                                       </span></span>
+<span id="cb18-7"><a href="#cb18-7"></a><span class="co">#&gt;  F0                       0.250000    </span></span>
+<span id="cb18-8"><a href="#cb18-8"></a><span class="co">#&gt;  RMSEA                    0.050000    </span></span>
+<span id="cb18-9"><a href="#cb18-9"></a><span class="co">#&gt;  Mc                       0.882497    </span></span>
+<span id="cb18-10"><a href="#cb18-10"></a><span class="co">#&gt;                                       </span></span>
+<span id="cb18-11"><a href="#cb18-11"></a><span class="co">#&gt;  df                       100         </span></span>
+<span id="cb18-12"><a href="#cb18-12"></a><span class="co">#&gt;  Num Observations         1000        </span></span>
+<span id="cb18-13"><a href="#cb18-13"></a><span class="co">#&gt;  NCP                      249.7500    </span></span>
+<span id="cb18-14"><a href="#cb18-14"></a><span class="co">#&gt;                                       </span></span>
+<span id="cb18-15"><a href="#cb18-15"></a><span class="co">#&gt;  Critical Chi-Square      124.3421    </span></span>
+<span id="cb18-16"><a href="#cb18-16"></a><span class="co">#&gt;  Alpha                    0.050000    </span></span>
+<span id="cb18-17"><a href="#cb18-17"></a><span class="co">#&gt;  Beta                     2.903302e-17</span></span>
+<span id="cb18-18"><a href="#cb18-18"></a><span class="co">#&gt;  Power (1-beta)           &gt; 0.9999    </span></span>
+<span id="cb18-19"><a href="#cb18-19"></a><span class="co">#&gt;  Implied Alpha/Beta Ratio 1.722177e+15</span></span></code></pre></div>
 <p><img src="data:image/png;base64,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" /><!-- --></p>
 <p>Calling the <code>summary</code> method on <code>ph1</code> shows that the power is very high (<code>power &gt; .9999</code>). The associated error probabilities are provided in higher precision. Specifically, the beta error is <code>beta = 2.903302e-17</code> which translates into <span class="math inline">\(2.9 \cdot 10^{-17} = 0.000000000000000029\)</span>. In practice, you would almost never miss a model with an actual RMSEA &gt;= .05 (or F0 &gt;= 0.25 or Mc &lt;= .882) under these conditions. The implied alpha/beta ratio is 1.722177e+15, showing that committing an alpha error is about two quadrillion (<span class="math inline">\(10^{15}\)</span>) times as likely as committing a beta error.</p>
 <p>If you are interested in how power changes for a range of different magnitudes of effect (say, for RMSEA ranging from .01 to .15), it is useful to request a <a href="#plots">power plot</a>, as described in detail <a href="#plots">below</a>.</p>
@@ -432,48 +679,48 @@ ap1 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span
 <h2>Compromise: Determine alpha and beta, given the alpha/beta ratio, N, effect, and df</h2>
 <p>The purpose of compromise power analyses is to determine alpha and beta (and the associated critical value of the chi-squared test-statistic) given a specified effect, a certain sample size, and a desired ratio between alpha and beta (Moshagen &amp; Erdfelder, 2016). In the language of structural equation modeling, a compromise analysis asks: With my sample at hand, how should I select a critical value for the chi-square model-test to obtain proportionate alpha and beta errors in deciding whether my model is rather aligned with the hypothesis of perfect fit or with the hypothesis of unacceptable degree of misfit (as defined by the chosen effect)?</p>
 <p>Performing a compromise power analyses requires the specification of a desired ratio between alpha and beta (which defaults to 1), the sample size, the type and magnitude of effect (defining the H1 model representing an unacceptable degree of misfit), and the model df. Again, depending on the chosen effect-size measure, it may also be required to define the number of observed variables.</p>
-<p>Suppose, we want to determine the critical chi-square and the associated alpha and beta errors, forcing them to be equal (i.e., an ratio of 1). Our model involves 100 <span class="math inline">\(df\)</span>, our sample size is <span class="math inline">\(N = 1000\)</span>, and we define the H1 model representing an unacceptable degree of misfit as a model associated with an RMSEA of at least .08. Thus, we call the function <code>semPower.compromise</code> with arguments <code>effect = .08</code>, <code>effect.measure = 'RMSEA'</code>, <code>abratio = 1</code>, <code>N = 1000</code>, and <code>df = 100</code>, store the results in a list called <code>cp1</code>, and call the <code>summary</code> method.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cp1 &lt;-<span class="st"> </span><span class="kw">semPower.compromise</span>(<span class="dt">effect =</span> .<span class="dv">08</span>, <span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, 
-                           <span class="dt">abratio =</span> <span class="dv">1</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>)
-<span class="kw">summary</span>(cp1)
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  semPower: Compromise power analysis</span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  F0                       0.640000    </span>
-<span class="co">#&gt;  RMSEA                    0.080000    </span>
-<span class="co">#&gt;  Mc                       0.726149    </span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  df                       100         </span>
-<span class="co">#&gt;  Num Observations         1000        </span>
-<span class="co">#&gt;  Desired Alpha/Beta Ratio 1.000000    </span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  Critical Chi-Square      312.0477    </span>
-<span class="co">#&gt;  Implied Alpha            1.212986e-23</span>
-<span class="co">#&gt;  Implied Beta             1.212986e-23</span>
-<span class="co">#&gt;  Implied Power (1-beta)   &gt; 0.9999    </span>
-<span class="co">#&gt;  Actual Alpha/Beta Ratio  1.000000</span></code></pre></div>
+<p>Suppose, we want to determine the critical chi-square and the associated alpha and beta errors, forcing them to be equal (i.e., an ratio of 1). Our model involves 100 <span class="math inline">\(df\)</span>, our sample size is <span class="math inline">\(N = 1000\)</span>, and we define the H1 model representing an unacceptable degree of misfit as a model associated with an RMSEA of at least .08. Thus, we call the function <code>semPower.compromise</code> with arguments <code>effect = .08</code>, <code>effect.measure = &#39;RMSEA&#39;</code>, <code>abratio = 1</code>, <code>N = 1000</code>, and <code>df = 100</code>, store the results in a list called <code>cp1</code>, and call the <code>summary</code> method.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>cp1 &lt;-<span class="st"> </span><span class="kw">semPower.compromise</span>(<span class="dt">effect =</span> <span class="fl">.08</span>, <span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, </span>
+<span id="cb19-2"><a href="#cb19-2"></a>                           <span class="dt">abratio =</span> <span class="dv">1</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>)</span>
+<span id="cb19-3"><a href="#cb19-3"></a><span class="kw">summary</span>(cp1)</span>
+<span id="cb19-4"><a href="#cb19-4"></a><span class="co">#&gt; </span></span>
+<span id="cb19-5"><a href="#cb19-5"></a><span class="co">#&gt;  semPower: Compromise power analysis</span></span>
+<span id="cb19-6"><a href="#cb19-6"></a><span class="co">#&gt;                                       </span></span>
+<span id="cb19-7"><a href="#cb19-7"></a><span class="co">#&gt;  F0                       0.640000    </span></span>
+<span id="cb19-8"><a href="#cb19-8"></a><span class="co">#&gt;  RMSEA                    0.080000    </span></span>
+<span id="cb19-9"><a href="#cb19-9"></a><span class="co">#&gt;  Mc                       0.726149    </span></span>
+<span id="cb19-10"><a href="#cb19-10"></a><span class="co">#&gt;                                       </span></span>
+<span id="cb19-11"><a href="#cb19-11"></a><span class="co">#&gt;  df                       100         </span></span>
+<span id="cb19-12"><a href="#cb19-12"></a><span class="co">#&gt;  Num Observations         1000        </span></span>
+<span id="cb19-13"><a href="#cb19-13"></a><span class="co">#&gt;  Desired Alpha/Beta Ratio 1.000000    </span></span>
+<span id="cb19-14"><a href="#cb19-14"></a><span class="co">#&gt;                                       </span></span>
+<span id="cb19-15"><a href="#cb19-15"></a><span class="co">#&gt;  Critical Chi-Square      312.0477    </span></span>
+<span id="cb19-16"><a href="#cb19-16"></a><span class="co">#&gt;  Implied Alpha            1.212986e-23</span></span>
+<span id="cb19-17"><a href="#cb19-17"></a><span class="co">#&gt;  Implied Beta             1.212986e-23</span></span>
+<span id="cb19-18"><a href="#cb19-18"></a><span class="co">#&gt;  Implied Power (1-beta)   &gt; 0.9999    </span></span>
+<span id="cb19-19"><a href="#cb19-19"></a><span class="co">#&gt;  Actual Alpha/Beta Ratio  1.000000</span></span></code></pre></div>
 <p><img src="data:image/png;base64,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" /><!-- --></p>
 <p>The results show that choosing a <code>Critical Chi-Square = 312</code> is associated with balanced error probabilities, <code>alpha = 1.212986e-23</code> and <code>beta = 1.212986e-23</code>. As requested, both error probabilities as just as large. In addition, committing either error is highly unlikely: an error of <code>1.212986e-23</code> translates into <span class="math inline">\(1.2 \cdot 10^{-23} = 0.000000000000000000000012\)</span>. In practice, one almost never would make a wrong decision.</p>
 <p>If, for some reason, you rather prefer the error probabilities to differ (for example because you consider falsely accepting an incorrect model to be 100 times as bad as falsely rejecting an correct model), you can achieve this by changing the <code>abratio</code> argument accordingly. For example, requesting the alpha error to be 100 times as large as the beta error proceeds by setting <code>abratio = 100</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cp2 &lt;-<span class="st"> </span><span class="kw">semPower.compromise</span>(<span class="dt">effect =</span> .<span class="dv">08</span>, <span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, 
-                           <span class="dt">abratio =</span> <span class="dv">100</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>)
-<span class="kw">summary</span>(cp2)
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  semPower: Compromise power analysis</span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  F0                       0.640000    </span>
-<span class="co">#&gt;  RMSEA                    0.080000    </span>
-<span class="co">#&gt;  Mc                       0.726149    </span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  df                       100         </span>
-<span class="co">#&gt;  Num Observations         1000        </span>
-<span class="co">#&gt;  Desired Alpha/Beta Ratio 100.000000  </span>
-<span class="co">#&gt;                                       </span>
-<span class="co">#&gt;  Critical Chi-Square      304.9642    </span>
-<span class="co">#&gt;  Implied Alpha            1.373729e-22</span>
-<span class="co">#&gt;  Implied Beta             1.373729e-24</span>
-<span class="co">#&gt;  Implied Power (1-beta)   &gt; 0.9999    </span>
-<span class="co">#&gt;  Actual Alpha/Beta Ratio  100.000000</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>cp2 &lt;-<span class="st"> </span><span class="kw">semPower.compromise</span>(<span class="dt">effect =</span> <span class="fl">.08</span>, <span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, </span>
+<span id="cb20-2"><a href="#cb20-2"></a>                           <span class="dt">abratio =</span> <span class="dv">100</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>)</span>
+<span id="cb20-3"><a href="#cb20-3"></a><span class="kw">summary</span>(cp2)</span>
+<span id="cb20-4"><a href="#cb20-4"></a><span class="co">#&gt; </span></span>
+<span id="cb20-5"><a href="#cb20-5"></a><span class="co">#&gt;  semPower: Compromise power analysis</span></span>
+<span id="cb20-6"><a href="#cb20-6"></a><span class="co">#&gt;                                       </span></span>
+<span id="cb20-7"><a href="#cb20-7"></a><span class="co">#&gt;  F0                       0.640000    </span></span>
+<span id="cb20-8"><a href="#cb20-8"></a><span class="co">#&gt;  RMSEA                    0.080000    </span></span>
+<span id="cb20-9"><a href="#cb20-9"></a><span class="co">#&gt;  Mc                       0.726149    </span></span>
+<span id="cb20-10"><a href="#cb20-10"></a><span class="co">#&gt;                                       </span></span>
+<span id="cb20-11"><a href="#cb20-11"></a><span class="co">#&gt;  df                       100         </span></span>
+<span id="cb20-12"><a href="#cb20-12"></a><span class="co">#&gt;  Num Observations         1000        </span></span>
+<span id="cb20-13"><a href="#cb20-13"></a><span class="co">#&gt;  Desired Alpha/Beta Ratio 100.000000  </span></span>
+<span id="cb20-14"><a href="#cb20-14"></a><span class="co">#&gt;                                       </span></span>
+<span id="cb20-15"><a href="#cb20-15"></a><span class="co">#&gt;  Critical Chi-Square      304.9642    </span></span>
+<span id="cb20-16"><a href="#cb20-16"></a><span class="co">#&gt;  Implied Alpha            1.373729e-22</span></span>
+<span id="cb20-17"><a href="#cb20-17"></a><span class="co">#&gt;  Implied Beta             1.373729e-24</span></span>
+<span id="cb20-18"><a href="#cb20-18"></a><span class="co">#&gt;  Implied Power (1-beta)   &gt; 0.9999    </span></span>
+<span id="cb20-19"><a href="#cb20-19"></a><span class="co">#&gt;  Actual Alpha/Beta Ratio  100.000000</span></span></code></pre></div>
 <p><img src="data:image/png;base64,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" /><!-- --></p>
 <p> </p>
 <p><a id="plots"></a></p>
@@ -484,18 +731,18 @@ ap1 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span
 <p>Power plots show the implied power as function of some other variable. <code>semPower</code> provides two different types of power plots. You can either plot the achieved power to detect a certain effect over a range of different sample sizes (<code>semPower.powerPlot.byN</code>). Alternatively, you can plot the achieved power with a given <span class="math inline">\(N\)</span> to detect a range of different effect size magnitudes (<code>semPower.powerPlot.byEffect</code>).</p>
 <div id="determine-power-as-function-of-n-for-a-given-effect" class="section level2">
 <h2>Determine power as function of N for a given effect</h2>
-<p>The function <code>semPower.powerPlot.byN</code> creates a plot showing the achieved power to detect a given effect on a given alpha error over a range of sample sizes. However, because it is difficult to specify diagnostic sample sizes for a given effect, the <code>semPower.powerPlot.byN</code> instead asks to provide the desired power range. For example, suppose we are interested in how the power to detect an effect corresponding to RMSEA = .05 changes as function of <span class="math inline">\(N\)</span>. We are interested in a power ranging from .05 to .99 (note that the power cannot become smaller than alpha). This is achieved by setting the arguments <code>power.min = .05</code> and <code>power.max = .99</code>. In addition, as in any a-priori power analysis, the type and magnitude of effect, the <span class="math inline">\(df\)</span>, and the alpha error need to be defined: <code>effect = .05</code>, <code>effect.measure = 'RMSEA'</code>,<code>alpha = .05</code>, <code>df = 100</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">semPower.powerPlot.byN</span>(<span class="dt">effect =</span> .<span class="dv">05</span>, <span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, 
-                       <span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">df =</span> <span class="dv">100</span>, <span class="dt">power.min =</span> .<span class="dv">05</span>, <span class="dt">power.max =</span> .<span class="dv">99</span>)</code></pre></div>
+<p>The function <code>semPower.powerPlot.byN</code> creates a plot showing the achieved power to detect a given effect on a given alpha error over a range of sample sizes. However, because it is difficult to specify diagnostic sample sizes for a given effect, the <code>semPower.powerPlot.byN</code> instead asks to provide the desired power range. For example, suppose we are interested in how the power to detect an effect corresponding to RMSEA = .05 changes as function of <span class="math inline">\(N\)</span>. We are interested in a power ranging from .05 to .99 (note that the power cannot become smaller than alpha). This is achieved by setting the arguments <code>power.min = .05</code> and <code>power.max = .99</code>. In addition, as in any a-priori power analysis, the type and magnitude of effect, the <span class="math inline">\(df\)</span>, and the alpha error need to be defined: <code>effect = .05</code>, <code>effect.measure = &#39;RMSEA&#39;</code>,<code>alpha = .05</code>, <code>df = 100</code>.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">semPower.powerPlot.byN</span>(<span class="dt">effect =</span> <span class="fl">.05</span>, <span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, </span>
+<span id="cb21-2"><a href="#cb21-2"></a>                       <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">df =</span> <span class="dv">100</span>, <span class="dt">power.min =</span> <span class="fl">.05</span>, <span class="dt">power.max =</span> <span class="fl">.99</span>)</span></code></pre></div>
 <p><img src="data:image/png;base64,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" /><!-- --></p>
 <p>This shows that a model with an associated RMSEA = .05 is rejected with a very high power when <span class="math inline">\(N &gt;250\)</span>, whereas power is small when <span class="math inline">\(N &lt; 100\)</span>.</p>
 <p> </p>
 </div>
 <div id="determine-power-as-function-of-the-magnitude-of-effect-for-a-given-n" class="section level2">
 <h2>Determine power as function of the magnitude of effect for a given N</h2>
-<p>The function <code>semPower.powerPlot.byEffect</code> creates a plot showing the achieved power at a given sample size over a range of effect sizes. For example, suppose we are interested in how the power at <span class="math inline">\(N = 500\)</span> changes as function of effect size magnitude, corresponding to an RMSEA ranging from .001 to .10. This is achieved by setting the arguments <code>effect.measure = 'RMSEA'</code>, <code>effect.min = .001</code> and <code>effect.max = .10</code>. In addition, as in any post-hoc power analysis, the sample size, the df, and the alpha error need to be defined: <code>effect = .05</code>, <code>effect.measure = 'RMSEA'</code>, <code>alpha = .05</code>, <code>df = 100</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">semPower.powerPlot.byEffect</span>(<span class="dt">effect.measure =</span> <span class="st">'RMSEA'</span>, <span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">N =</span> <span class="dv">500</span>, 
-                            <span class="dt">df =</span> <span class="dv">100</span>, <span class="dt">effect.min =</span> .<span class="dv">001</span>, <span class="dt">effect.max =</span> .<span class="dv">10</span>)</code></pre></div>
+<p>The function <code>semPower.powerPlot.byEffect</code> creates a plot showing the achieved power at a given sample size over a range of effect sizes. For example, suppose we are interested in how the power at <span class="math inline">\(N = 500\)</span> changes as function of effect size magnitude, corresponding to an RMSEA ranging from .001 to .10. This is achieved by setting the arguments <code>effect.measure = &#39;RMSEA&#39;</code>, <code>effect.min = .001</code> and <code>effect.max = .10</code>. In addition, as in any post-hoc power analysis, the sample size, the df, and the alpha error need to be defined: <code>effect = .05</code>, <code>effect.measure = &#39;RMSEA&#39;</code>, <code>alpha = .05</code>, <code>df = 100</code>.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">semPower.powerPlot.byEffect</span>(<span class="dt">effect.measure =</span> <span class="st">&#39;RMSEA&#39;</span>, <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">N =</span> <span class="dv">500</span>, </span>
+<span id="cb22-2"><a href="#cb22-2"></a>                            <span class="dt">df =</span> <span class="dv">100</span>, <span class="dt">effect.min =</span> <span class="fl">.001</span>, <span class="dt">effect.max =</span> <span class="fl">.10</span>)</span></code></pre></div>
 <p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAtFBMVEUAAAAAADoAAGYAOjoAOmYAOpAAZmYAZrY6AAA6ADo6OgA6Ojo6OmY6ZmY6ZpA6ZrY6kNtmAABmOgBmOjpmZgBmZjpmkLZmkNtmtrZmtttmtv+QOgCQZgCQZjqQkDqQkGaQtpCQttuQ27aQ29uQ2/+2ZgC2Zjq2ZpC2kDq2kGa225C229u22/+2/9u2///bkDrbtmbbtpDb25Db27bb29vb////tmb/25D/27b//7b//9v///+73NsVAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAKcklEQVR4nO2di3qjxgFGkWNHStpm5WyadOUm6TYmtzpL0tR4Ld7/vTp3QAL+AQYYpP98364lMTcOcwOhISlIJ8nSBYgdCgJQEICCABQEoCAABQEoCEBBAAoCUBCAggAUBKAgAAUBKAhAQQAKAlAQgIIAFASgIAAFASgIQEEACgJQEICCABQEoCAABQEoCNAiKEs0f30aluzxx12SvGnd+qBT36jkU/Hq7rkwr7Zy+y+fi41fPFVLYsPkSXLzoSNhGer40wcZcfNY2yhSP4g/r/cqj3ZMjqogPyZA0GkmvuQy7r5tqxWkk09tNqLoqlzO36E4FyRDHzoSFqE+fnnTIkgmAQWlTpAqSHOg02L15ax0NUpBshiplfmy0x+4zPV+1kpiJXbvYZsgqRYJEtvtkRVJvG8VpOrxx3udyx9vk+STr59lJnfPtrLm8n9ZCTdvnnVq//oyuXmyZVExXcTaZtMSpBHxVwT+i3qfOWObdyLvB5VLVm9RebL5e+WTk/K8kwmn2q3I8AdRuNvHMqxSXgpSB+SsmYhPTQ0Vxdy290G6EPowZO4Q5vK9PIp7faDUARWlcIe6bAcyZBmxttkK0vsnAv9tJwIfH26+M4JU5qKk+zNBIsZ/d2XjPSnPbzVBZTV0gkQ4JCiXx0t1vqoudQv6817+1Qc6k6krvTLhrfabyjph9yS5eyr+Z+PLTCsRa5vPapA48jLtu59tE9t8/R9XEovpYfdOrz3cZXn0JtvEZIZZ2RWKj7/Sx7RTUOo+U/vl0weZIyr/KCuZOi6ybKa9Kp1ZtfPMTPfrItY2V/qgvW4gsirlyT6rdtK375/PBOW6Xro9OinPiaBDrUcRH/8qdhn0Qcdvd7dPxR/y0HkJUlVfH7FMF07W4U/vN4+ZLpQLVusUs4aI5eZS0Nb0ILlILE0OmemAf//8pOVaQapNvlTaWL08dUEyw4qOVOWx+TcaxdwOeAhScxGbh+qUc5WDbBL6oHcJqkVsEnT7XhdcleUfYidzN0Id//x+Z9pbpQ9yB8S1sXp5oCCRwKegibl0gaCyWLWKIDKUPWom89lXevyiZw0SO/Oz2U8pSClTwrdlBTFNsyKoXp0k9fJAQW6k9BHk0UlXUrZ/Ursn1TrSLOikDzoRpHZ3awSZSbQSJBLdfCM2i37gRFB9/mQLVykPFlSdRzUKenm72xeuw7179hFUHYzUHFnthJmBiCmLmC2p7WeC6qPYmSAzf1GC8sQMktWJYv2NaiBbE98Vr1YenbCdmzQJUul1dtIPYnZY/G4KsnnnI6g6nVHaDzIZlY2ZB5UFqgmqz4POBb2oOpKaqYQeWCunGiczaTW1OdgC2TZWK49OODeBGwXJEnd20qZeqXO6rlON2vRMTYi/cYYfyyJ+/Fakp04rmwRVIjYJklVoqwuuK4WpIkc1itkZuBP0m6s4umqel0cnLGf3t08tgoocnap8fGtPDtQ5d2dYwutBCAoCUBCAggAUBKAgAAUBKAhAQQAKAlAQgIIAFASgIAAFASgIQEEACgJQEICCABQEoCAABQEoCEBBAAoCUBCAggAUBKAgQGBByWpYSlDY5KaDggAUBJhZUP+m7Z3gRL3PemtQUM8d2QQPOEtyc6gxOQUPOENys9kp1ilo1g5+hYLmHQDXJ2jmCcLqBM09gVqboNknmBQUKsM4BM1/hjKRIPnzJfUjqrbFIYbt6QJncNMIytTvHbfyV1gt63Jct6Djg9CS658StizpMWhXl7gEMImg13u5Qob+2V7LEjXXLWiiGrTINaSJ+yClanRyI+KMZkWj2DIXIVc0D6KgeUsQOteBxcuCjWILXeZfz0X76xA0IjkKmjX/8Pn2K+DRLDvSutTjlQvK7NJYedsiktctqDJ/DnWqsdhX1dOdrGpCnaxelqDrrkGt558VMnsOFqoPWu5mkP6CKu2nHbMiV/sKuBcsqLVbmSbfQcEDMqQGJWCOEzTfAaGDso6ZNAXNm/kkWVcCvsr1IlM8lgXJd0DooAzppDePYnbT+o1X4Hx7Bw7MsHmQnP61XQoLnG/vwIEZNg+SgsaN9hcsyNagdNhjEPrm2zNscAb3QVn7QyuC5tszbHAGjmKDHzTSO9+eYYOzhov21yRoSHKL+hl2LubxsIBg+a5PUHVx8RnyXaEgzev9XPOgNQqSlWiuGrSsnyGC5GL3o6+ZXbCgkW2rb77rE1TYRxLMnu8iDCxo1vF4vCnznZ9JR7GXXavFSxaUwov27rp+eyjffJf2M2wmDUd4831hgBq0QkFevN7Lq0XXKkg99QfVolQ9ougqBeXmcYVgGMuS/XhBi/sZcfNC230bjpfdJ1cpyN68gC/aHx/aa9kFC/KuQQHyXd7PhH2QZtyN5OsU5DeKtaTS65p0BH7iviZNQfPmOYjegrKOH4GVHEPcSB6Dn96Csu4JsiHMjeRrFKTHeDTCh7kNOAo/fQXpWSKaI4a5kfyCBbEGobOMEDeSx+FnIkEhbiS/bEHj843ET39B8GpzoHxXKmi+fClo1uyGQ0EACgJEKigaPxSEiFNQPH4oCBGloIj8zC3I76L9FQvySi4mPxSEiFBQVH4oCBGfoLj8xCcoMj/RCYrNDwUh4hI05xNFPJlI0KDv5iPUM5WgQd/Nx6hnIkFDvlmNsvoUEwnq/918rHriqEHzPQtrAFP1QZ7fzc/zELUxTDSKhV7kbTnimgdFCAUBphYUbkXyhYjymnRMsIkBKAgQ08lqlER0shoni51qrIYpBHmcrHqlOfIWkGmjjwnuUYO80rxYQR4nq15pXq4gfLLqleYFCwqTJgWN205BFDRuOwVdvaCLgoIAFASgIAAFASgIQEEACgJQEICCABQEoCAABQHCCMqrq8O5N7nvmnHN0QV+Dxpqju63phYkiKBcFCm3ZXRvap/2jy5fg4vfXdHlmlp5AEMhBOmvg9Jt/U3t0/7RC/PIvMG5b/1yR4QQpBc/M7cMuTe1T/tHl//f/dNDUHP0uAR9Juu3+bLVval92j+6eunTB7VEj6mJ6Q7AdAPuTe3T/tEL2Vp8BLVE9x8iuolXkO/j8lqip6IWvezGPfNTEm0TUy+GNzHvHhARbSedmdtUYC/SHN27/iJiHub9alBzdG1qjlXZfJhqoug3k26OHlMfpKb1slB68pFVJvt+Vbw5euF7qtEcXT5IZbwfnqwiKAhAQQAKAlAQgIIAFASgIAAFASgIQEEACgJQEICCABQEoCAABQEoCEBBAAoCUBCAggAUBKAgAAUBKAhAQYDoBKWJW9whS5J91vQFex7g9l5f4hPk7ld4vd+rf2dUVqGZnqgFHZpdUJBCPd09UcuBZfZOFvliKzd43RYThHgFlTVIP4h6r1+IRnflNch00nsnSPdD+c0H2yFduaCzGqRvr3vZHezjzClI4wTZ+131Pb4U1FyDCnuPLwWdCnI+2AdJWkaxIpW/TlA/4dg2zh6nIj5BpsfZPJa1J0vM6qhqHiTDXPE8KDYoCEBBAAoCUBCAggAUBKAgAAUBKAhAQQAKAlAQgIIAFASgIAAFASgIQEEACgJQEICCABQEoCDA/wEdHdX+zyMq3AAAAABJRU5ErkJggg==" /><!-- --></p>
 <p>This shows that with <span class="math inline">\(N = 500\)</span>, a model with an associated RMSEA &gt; .04 is detected with a very high power, whereas power for RMSEA &lt; .03 is rather modest.</p>
 <p> </p>
@@ -507,49 +754,50 @@ ap1 &lt;-<span class="st"> </span><span class="kw">semPower.aPriori</span>(<span
 <p>The previous sections assumed that the magnitude of effect is determined by defining a certain effect size metric (such as F0 or RMSEA) and a certain magnitude of effect. Alternatively, the effect can also be determined by specifying the population (<span class="math inline">\(\Sigma\)</span>) and the model-implied (<span class="math inline">\(\hat{\Sigma}\)</span>) covariance matrices directly. To determine the associated effect in terms of F0, <code>semPower</code> just plugs these matrices in the ML-fitting function:</p>
 <p><span class="math display">\[F_0 = \log|\Sigma| - \log|\hat{\Sigma}| + tr(\hat{\Sigma}\Sigma) - p \]</span></p>
 <p>Suppose, <span class="math inline">\(\Sigma\)</span> and <span class="math inline">\(\hat{\Sigma}\)</span> have been defined previously in the script and are referred to by the variables <code>Sigma</code> and <code>SigmaHat</code> Then, any of the power-analysis functions is called setting the <code>Sigma</code> and <code>SigmaHat</code> arguments accordingly (and omitting the <code>effect</code> and <code>effect.measures</code> arguments). This could look as follows:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">semPower.aPriori</span>(<span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">power =</span> .<span class="dv">80</span>, <span class="dt">df =</span> <span class="dv">100</span>, 
-                 <span class="dt">Sigma =</span> Sigma, <span class="dt">SigmaHat =</span> SigmaHat)
-<span class="kw">semPower.postHoc</span>(<span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>, 
-                 <span class="dt">Sigma =</span> Sigma, <span class="dt">SigmaHat =</span> SigmaHat)
-<span class="kw">semPower.compromise</span>(<span class="dt">abratio =</span> <span class="dv">1</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>, 
-                    <span class="dt">Sigma =</span> Sigma, <span class="dt">SigmaHat =</span> SigmaHat)
-<span class="kw">semPower.powerPlot.byN</span>(<span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">df =</span> <span class="dv">100</span>, <span class="dt">power.min =</span> .<span class="dv">05</span>, <span class="dt">power.max =</span> .<span class="dv">99</span>, 
-                       <span class="dt">Sigma =</span> Sigma, <span class="dt">SigmaHat =</span> SigmaHat)</code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">semPower.aPriori</span>(<span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">df =</span> <span class="dv">100</span>, </span>
+<span id="cb23-2"><a href="#cb23-2"></a>                 <span class="dt">Sigma =</span> Sigma, <span class="dt">SigmaHat =</span> SigmaHat)</span>
+<span id="cb23-3"><a href="#cb23-3"></a><span class="kw">semPower.postHoc</span>(<span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>, </span>
+<span id="cb23-4"><a href="#cb23-4"></a>                 <span class="dt">Sigma =</span> Sigma, <span class="dt">SigmaHat =</span> SigmaHat)</span>
+<span id="cb23-5"><a href="#cb23-5"></a><span class="kw">semPower.compromise</span>(<span class="dt">abratio =</span> <span class="dv">1</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> <span class="dv">100</span>, </span>
+<span id="cb23-6"><a href="#cb23-6"></a>                    <span class="dt">Sigma =</span> Sigma, <span class="dt">SigmaHat =</span> SigmaHat)</span>
+<span id="cb23-7"><a href="#cb23-7"></a><span class="kw">semPower.powerPlot.byN</span>(<span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">df =</span> <span class="dv">100</span>, <span class="dt">power.min =</span> <span class="fl">.05</span>, <span class="dt">power.max =</span> <span class="fl">.99</span>, </span>
+<span id="cb23-8"><a href="#cb23-8"></a>                       <span class="dt">Sigma =</span> Sigma, <span class="dt">SigmaHat =</span> SigmaHat)</span></code></pre></div>
 <p>This feature is particularly useful when used in conjunction with some other SEM software, which is used to generate the population and the model-implied covariance matrix (note that a proper definition of the latter usually requires fitting the model to the population data). For illustration, let’s consider how this could be done using <code>lavaan</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lavaan)
-
-<span class="co"># define (true) population model</span>
-model.pop &lt;-<span class="st"> '</span>
-<span class="st">f1 =~ .8*x1 + .7*x2 + .6*x3</span>
-<span class="st">f2 =~ .7*x4 + .6*x5 + .5*x6</span>
-<span class="st">f1 ~~ 1*f1</span>
-<span class="st">f2 ~~ 1*f2</span>
-<span class="st">f1 ~~ 0.5*f2</span>
-<span class="st">'</span>
-<span class="co"># define (wrong) H0 model</span>
-model.h0 &lt;-<span class="st"> '</span>
-<span class="st">f1 =~ x1 + x2 + x3</span>
-<span class="st">f2 =~ x4 + x5 + x6</span>
-<span class="st">f1 ~~ 0*f2</span>
-<span class="st">'</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="kw">library</span>(lavaan)</span>
+<span id="cb24-2"><a href="#cb24-2"></a></span>
+<span id="cb24-3"><a href="#cb24-3"></a><span class="co"># define (true) population model</span></span>
+<span id="cb24-4"><a href="#cb24-4"></a>model.pop &lt;-<span class="st"> &#39;</span></span>
+<span id="cb24-5"><a href="#cb24-5"></a><span class="st">f1 =~ .8*x1 + .7*x2 + .6*x3</span></span>
+<span id="cb24-6"><a href="#cb24-6"></a><span class="st">f2 =~ .7*x4 + .6*x5 + .5*x6</span></span>
+<span id="cb24-7"><a href="#cb24-7"></a><span class="st">f1 ~~ 1*f1</span></span>
+<span id="cb24-8"><a href="#cb24-8"></a><span class="st">f2 ~~ 1*f2</span></span>
+<span id="cb24-9"><a href="#cb24-9"></a><span class="st">f1 ~~ 0.5*f2</span></span>
+<span id="cb24-10"><a href="#cb24-10"></a><span class="st">&#39;</span></span>
+<span id="cb24-11"><a href="#cb24-11"></a><span class="co"># define (wrong) H0 model</span></span>
+<span id="cb24-12"><a href="#cb24-12"></a>model.h0 &lt;-<span class="st"> &#39;</span></span>
+<span id="cb24-13"><a href="#cb24-13"></a><span class="st">f1 =~ x1 + x2 + x3</span></span>
+<span id="cb24-14"><a href="#cb24-14"></a><span class="st">f2 =~ x4 + x5 + x6</span></span>
+<span id="cb24-15"><a href="#cb24-15"></a><span class="st">f1 ~~ 0*f2</span></span>
+<span id="cb24-16"><a href="#cb24-16"></a><span class="st">&#39;</span></span></code></pre></div>
 <p>After loading the <code>lavaan</code> package, two lavaan model strings are defined. The first model string (<code>model.pop</code>) is used to define the population covariance matrix, so all model parameters are defined (at least implicitly, consult the lavaan documentation for defaults). Here, we define a model comprising two latent factors (each with variance of 1), that are correlated by .5. Each latent factor is measured through three observed indicators (x1 to x6) with (unstandardized) loadings ranging from .5 to .8. The second model string (<code>model.h0</code>) is used to define the hypothesized (wrong) H0 model. To obtain the model-implied covariance matrix, we need to fit this model to the population data; so this is basically an ordinary CFA model string with many free parameters. Note that this model contraints the correlation between the two latent factors to zero. When fitting this model to the population data defined previously, the model is thus wrong, since we defined the correlation between these factors in the population to be .50.</p>
 <p>Having defined the model strings, we proceed by actually obtaining the relevant covariance matrices.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get population covariance matrix; equivalent to a perfectly fitting model</span>
-cov.pop &lt;-<span class="st"> </span><span class="kw">fitted</span>(<span class="kw">sem</span>(model.pop))<span class="op">$</span>cov
-
-<span class="co"># get covariance matrix as implied by H0 model</span>
-res.h0 &lt;-<span class="st"> </span><span class="kw">sem</span>(model.h0, <span class="dt">sample.cov =</span> cov.pop, <span class="dt">sample.nobs =</span> <span class="dv">1000</span>, <span class="dt">likelihood=</span><span class="st">'wishart'</span>)
-df &lt;-<span class="st"> </span>res.h0<span class="op">@</span>test[[<span class="dv">1</span>]]<span class="op">$</span>df
-cov.h0 &lt;-<span class="st"> </span><span class="kw">fitted</span>(res.h0)<span class="op">$</span>cov</code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="co"># get population covariance matrix; equivalent to a perfectly fitting model</span></span>
+<span id="cb25-2"><a href="#cb25-2"></a>cov.pop &lt;-<span class="st"> </span><span class="kw">fitted</span>(<span class="kw">sem</span>(model.pop))<span class="op">$</span>cov</span>
+<span id="cb25-3"><a href="#cb25-3"></a></span>
+<span id="cb25-4"><a href="#cb25-4"></a><span class="co"># get covariance matrix as implied by H0 model</span></span>
+<span id="cb25-5"><a href="#cb25-5"></a>res.h0 &lt;-<span class="st"> </span><span class="kw">sem</span>(model.h0, <span class="dt">sample.cov =</span> cov.pop, </span>
+<span id="cb25-6"><a href="#cb25-6"></a>              <span class="dt">sample.nobs =</span> <span class="dv">1000</span>, <span class="dt">sample.cov.rescale =</span> F, <span class="dt">likelihood=</span><span class="st">&#39;wishart&#39;</span>)</span>
+<span id="cb25-7"><a href="#cb25-7"></a>df &lt;-<span class="st"> </span>res.h0<span class="op">@</span>test[[<span class="dv">1</span>]]<span class="op">$</span>df</span>
+<span id="cb25-8"><a href="#cb25-8"></a>cov.h0 &lt;-<span class="st"> </span><span class="kw">fitted</span>(res.h0)<span class="op">$</span>cov</span></code></pre></div>
 <p><code>cov.pop</code> is now the covariance matrix in the population (<span class="math inline">\(\Sigma\)</span>). To obtain the model implied covariance matrix (<span class="math inline">\(\hat{\Sigma}\)</span>), we need to fit our hypothesized, wrong, H0 model (<code>model.h0</code>) to the population data (<code>cov.pop</code>). The model-implied covariance matrix then can be obtained by calling <code>cov.h0 &lt;- fitted(res.h0)$cov</code>.</p>
 <p>We are now in the position to use the obtained covariance matrix in power analyses. Let’s do a post-hoc power-analysis assuming <span class="math inline">\(N = 1000\)</span> and alpha =.05 by calling <code>semPower.postHoc</code> with the arguments <code>SigmaHat = cov.h0</code> and <code>Sigma = cov.pop</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ph4 &lt;-<span class="st"> </span><span class="kw">semPower.postHoc</span>(<span class="dt">SigmaHat =</span> cov.h0, <span class="dt">Sigma =</span> cov.pop, <span class="dt">alpha =</span> .<span class="dv">05</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> df)
-<span class="kw">summary</span>(ph4)</code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>ph4 &lt;-<span class="st"> </span><span class="kw">semPower.postHoc</span>(<span class="dt">SigmaHat =</span> cov.h0, <span class="dt">Sigma =</span> cov.pop, <span class="dt">alpha =</span> <span class="fl">.05</span>, <span class="dt">N =</span> <span class="dv">1000</span>, <span class="dt">df =</span> df)</span>
+<span id="cb26-2"><a href="#cb26-2"></a><span class="kw">summary</span>(ph4)</span></code></pre></div>
 <p>The output (which is omitted here) indicates that fitting the hypothesized model to the population data is associated with a discrepancy of F0 = 0.081 (or RMSEA = .095 or SRMR = .139 or …) and that the power to reject the H1 model is very high, 1 - beta = 1 - 1.347826e-08.</p>
 <p>It is instructive to compare the expected chi-square (calculated via the obtained F0) with the chi-square model test statistics as reported by <code>lavaan</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">fitmeasures</span>(res.h0, <span class="st">'chisq'</span>)
-ph4<span class="op">$</span>fmin <span class="op">*</span><span class="st"> </span>(ph4<span class="op">$</span>N<span class="op">-</span><span class="dv">1</span>)</code></pre></div>
-<p><code>fitmeasures(res.h0, 'chisq')</code> prints the model chi-square test as obtained by <code>lavaan</code> when fitting <code>model.h1</code> to the population data (<code>cov.pop</code>, see above). The line <code>ph4$fmin * (ph4$N-1)</code> computes the expected chi-square, i.e. F0 multiplied by (N - 1). Obviously, both values match (= 81.52).</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">fitmeasures</span>(res.h0, <span class="st">&#39;chisq&#39;</span>)</span>
+<span id="cb27-2"><a href="#cb27-2"></a>ph4<span class="op">$</span>fmin <span class="op">*</span><span class="st"> </span>(ph4<span class="op">$</span>N<span class="dv">-1</span>)</span></code></pre></div>
+<p><code>fitmeasures(res.h0, &#39;chisq&#39;)</code> prints the model chi-square test as obtained by <code>lavaan</code> when fitting <code>model.h1</code> to the population data (<code>cov.pop</code>, see above). The line <code>ph4$fmin * (ph4$N-1)</code> computes the expected chi-square, i.e. F0 multiplied by (N - 1). Obviously, both values match (= 81.52).</p>
 <p> </p>
 </div>
 <div id="references" class="section level1">
