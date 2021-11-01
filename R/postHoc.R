@@ -7,20 +7,20 @@
 #' @param alpha alpha error
 #' @param N the number of observations (a list for multiple group models)
 #' @param df the model degrees of freedom
-#' @param p the number of observed variables, required for effect.measure = "GammaHat", "GFI",  and "AGFI"
+#' @param p the number of observed variables, required for effect.measure = "GFI" and "AGFI"
 #' @param SigmaHat model implied covariance matrix (a list for multiple group models). Use in conjuntion with Sigma to define effect and effect.measure. 
 #' @param Sigma population covariance matrix (a list for multiple group models). Use in conjuntion with SigmaHat to define effect and effect.measure.
 #' @return list
 #' @examples
 #' \dontrun{
 #' power <- semPower.postHoc(effect = .05, effect.measure = "RMSEA", alpha = .05, N = 250, df = 200)
-#' power
+#' summary(power)
 #' power <- semPower.postHoc(effect = list(.02, .01), effect.measure = "F0", 
 #'                           alpha = .05, N = list(250, 350), df = 200)
-#' power
+#' summary(power)
 #' power <- semPower.postHoc(N = 1000, df = 5, alpha = .05,  
 #'                           SigmaHat = diag(4), Sigma = cov(matrix(rnorm(4*1000),  ncol=4)))
-#' power
+#' summary(power)
 #' }
 #' @importFrom stats qchisq pchisq 
 #' @export
@@ -61,7 +61,7 @@ semPower.postHoc <- function(effect = NULL, effect.measure = NULL, alpha,
   }
   if(!is.null(SigmaHat)){
     if(is.list(Sigma)){
-      fmin.g <- sapply(seq_along(SigmaHat), FUN = function(x) {getF.Sigma(SigmaHat = SigmaHat[[x]], S = Sigma[[x]]) })
+      fmin.g <- sapply(seq_along(SigmaHat), FUN = function(x) {getF.Sigma(SigmaHat = SigmaHat[[x]], S = Sigma[[x]])})
     }else{
       fmin.g <- getF.Sigma(SigmaHat = SigmaHat, S = Sigma)
     }
@@ -71,9 +71,9 @@ semPower.postHoc <- function(effect = NULL, effect.measure = NULL, alpha,
   fit <- getIndices.F(fmin, df, p, SigmaHat, Sigma, N)
   ncp <- getNCP(fmin.g, N)
 
-  beta <- pchisq(qchisq(alpha, df, lower.tail = F), df, ncp=ncp)
-  power <- pchisq(qchisq(alpha, df, lower.tail = F), df, ncp=ncp, lower.tail = F)
-  impliedAbratio <- alpha/beta
+  beta <- pchisq(qchisq(alpha, df, lower.tail = FALSE), df, ncp = ncp)
+  power <- pchisq(qchisq(alpha, df, lower.tail = FALSE), df, ncp = ncp, lower.tail = FALSE)
+  impliedAbratio <- alpha / beta
 
 
   result <- list(
@@ -89,7 +89,7 @@ semPower.postHoc <- function(effect = NULL, effect.measure = NULL, alpha,
     N = N,
     df = df,
     p = p,
-    chiCrit = qchisq(alpha, df,ncp = 0, lower.tail = F),
+    chiCrit = qchisq(alpha, df, ncp = 0, lower.tail = FALSE),
     rmsea = fit$rmsea,
     mc = fit$mc,
     gfi = fit$gfi,
@@ -117,7 +117,7 @@ summary.semPower.postHoc <- function(object, ...){
 
   cat("\n semPower: Post-hoc power analysis\n")
 
-  print(out.table, row.names = F, right = F)
+  print(out.table, row.names = FALSE, right = FALSE)
 
   semPower.showPlot(chiCrit = object$chiCrit, ncp = object$ncp, df = object$df)
   

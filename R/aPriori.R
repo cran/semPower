@@ -16,15 +16,15 @@
 #' @examples
 #' \dontrun{
 #' power <- semPower.aPriori(effect = .05, effect.measure = "RMSEA", alpha = .05, beta = .05, df = 200)
-#' power
+#' summary(power)
 #' power <- semPower.aPriori(effect = .15, effect.measure = "F0", alpha = .05, power = .80, df = 100)
-#' power
+#' summary(power)
 #' power <- semPower.aPriori(effect = list(.05, .10), effect.measure = "F0", alpha = .05, 
 #'                           power = .80, N = list(1, 1), df = 100)
-#' power
+#' summary(power)
 #' power <- semPower.aPriori(alpha = .01, beta = .05, df = 5, 
 #'                           SigmaHat = diag(4), Sigma = cov(matrix(rnorm(4*1000),  ncol=4)))
-#' power
+#' summary(power)
 #' }
 #' @importFrom stats qchisq pchisq optim
 #' @export
@@ -58,8 +58,7 @@ semPower.aPriori <- function(effect = NULL, effect.measure = NULL,
   if(is.null(SigmaHat) && is.list(N) && length(effect) == 1){
     effect <- as.list(rep(effect, length(N)))
   }
-  ngroups <- length(N)
-  
+
   # obsolete, single group case only
   # fmin <- getF(effect, effect.measure, df, p, SigmaHat, Sigma)
   # fit <- getIndices.F(fmin, df, p, SigmaHat, Sigma)
@@ -85,31 +84,31 @@ semPower.aPriori <- function(effect = NULL, effect.measure = NULL,
     desiredBeta <- 1 - power
   }
   logBetaTarget <- log(desiredBeta)
-  critChi <- qchisq(alpha, df=df, ncp = 0, lower.tail = F)
+  critChi <- qchisq(alpha, df = df, ncp = 0, lower.tail = FALSE)
 
   # make a reasonable guess about required sample size
   exponent <- -floor(log10(fmin))+1
   startN <- 5*10^(exponent)
 
-  bPrecisionWarning <- (startN <= 10)
+  bPrecisionWarning <- (startN < 5)  # skip estm for N < 5, but take N = 10 as effective minimum 
+
+  weights <- 1
+  if(!is.null(N) && length(N) > 1){
+    weights <- unlist(N) / sum(unlist(N))
+  }
 
   if(!bPrecisionWarning){
 
-    weights <- 1
-    if(!is.null(N) && length(N) > 1){
-      weights <- unlist(N)/sum(unlist(N))
-    }
-
     chiCritOptim <- optim(par = c(startN), fn = getBetadiff,
-            critChi=critChi, logBetaTarget=logBetaTarget, fmin=unlist(fmin.g), df=df, weights=weights,
-            method='Nelder-Mead', control = list(warn.1d.NelderMead=F))
+            critChi = critChi, logBetaTarget = logBetaTarget, fmin = unlist(fmin.g), df = df, weights = weights,
+            method = 'Nelder-Mead', control = list(warn.1d.NelderMead = FALSE))
 
     requiredN <- sum(ceiling(weights*chiCritOptim$par))  
 
     # even N = 10 achieves or exceeds desired power
     if(requiredN < 10){
       requiredN <- 10
-      bPrecisionWarning = T
+      bPrecisionWarning <- TRUE
     }
 
   }else{
@@ -118,14 +117,14 @@ semPower.aPriori <- function(effect = NULL, effect.measure = NULL,
   }
   
   # N by group
-  requiredN.g <- ceiling(weights*requiredN)
+  requiredN.g <- ceiling(weights * requiredN)
   
   # need to compute this after having determined Ns, because some indices rely on sample weights in multigroup case
   fit <- getIndices.F(fmin, df, p, SigmaHat, Sigma, requiredN.g)
   
   impliedNCP <- getNCP(fmin.g, requiredN.g)
   impliedBeta <- pchisq(critChi, df, impliedNCP)
-  impliedPower <- pchisq(critChi, df, impliedNCP, lower.tail = F)
+  impliedPower <- pchisq(critChi, df, impliedNCP, lower.tail = FALSE)
   impliedAbratio <- alpha / impliedBeta
 
   result <- list(
@@ -179,9 +178,9 @@ getBetadiff <- function(cN, critChi, logBetaTarget, fmin, df, weights = NULL){
     diff <- NA
     
   }else{
-    cNCP <- sum(fmin * ((weights *cN) - 1) )
+    cNCP <- sum(fmin * ((weights * cN) - 1) )
     
-    cLogBeta <- pchisq(critChi, df, cNCP, log.p = T)
+    cLogBeta <- pchisq(critChi, df, cNCP, log.p = TRUE)
     
     diff <- (logBetaTarget - cLogBeta)^2
     
@@ -206,7 +205,7 @@ summary.semPower.aPriori <- function(object, ...){
   if(object$bPrecisionWarning)
     cat("\n\n NOTE: Power is higher than requested even for a sample size < 10.\n\n")
 
-  print(out.table, row.names = F, right = F)
+  print(out.table, row.names = FALSE, right = FALSE)
   
   semPower.showPlot(chiCrit = object$chiCrit, ncp = object$impliedNCP, df = object$df)
 

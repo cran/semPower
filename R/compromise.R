@@ -8,7 +8,7 @@
 #' @param abratio the ratio of alpha to beta
 #' @param N the number of observations  (a list for multiple group models)
 #' @param df the model degrees of freedom
-#' @param p the number of observed variables, required for effect.measure = "GammaHat", "GFI",  and "AGFI"
+#' @param p the number of observed variables, required for effect.measure = "GFI" and "AGFI"
 #' @param SigmaHat model implied covariance matrix (a list for multiple group models). Use in conjuntion with Sigma to define effect and effect.measure.  
 #' @param Sigma population covariance matrix (a list for multiple group models). Use in conjuntion with SigmaHat to define effect and effect.measure.
 #' @return list
@@ -48,8 +48,7 @@ semPower.compromise  <- function(effect = NULL, effect.measure = NULL,
   if(is.null(SigmaHat) && is.list(N) && length(effect) == 1){
     effect <- as.list(rep(effect, length(N)))
   }
-  ngroups <- ifelse(is.null(N), 1, length(N))
-  
+
   # obsolete, single group case only
   # fmin <- getF(effect, effect.measure, df, p, SigmaHat, Sigma)
   # fit <- getIndices.F(fmin, df, p, SigmaHat, Sigma)
@@ -59,7 +58,7 @@ semPower.compromise  <- function(effect = NULL, effect.measure = NULL,
   }
   if(!is.null(SigmaHat)){
     if(is.list(Sigma)){
-      fmin.g <- sapply(seq_along(SigmaHat), FUN = function(x) {getF.Sigma(SigmaHat = SigmaHat[[x]], S = Sigma[[x]]) })
+      fmin.g <- sapply(seq_along(SigmaHat), FUN = function(x) {getF.Sigma(SigmaHat = SigmaHat[[x]], S = Sigma[[x]])})
     }else{
       fmin.g <- getF.Sigma(SigmaHat = SigmaHat, S = Sigma)
     }
@@ -78,7 +77,7 @@ semPower.compromise  <- function(effect = NULL, effect.measure = NULL,
   # determine max/min chi for valid alpha/beta prob
   max <- min <- NA
   # central chi always gives reusult up to 1e-320
-  max <- qchisq(log(1e-320), df, lower.tail = F, log.p = T)
+  max <- qchisq(log(1e-320), df, lower.tail = FALSE, log.p = TRUE)
 
   # non-central chi accuracy is usually lower, depending on df and ncp
   pmin <- -Inf
@@ -86,8 +85,8 @@ semPower.compromise  <- function(effect = NULL, effect.measure = NULL,
   while(is.infinite(pmin)){
     testp <- testp * 10
     testv <- max(log(1e-320), (log.abratio + log(testp)))
-    min <- qchisq(testv, df, ncp, log.p = T)
-    pmin <- pchisq(min, df, ncp, log.p = T) # beta
+    min <- qchisq(testv, df, ncp, log.p = TRUE)
+    pmin <- pchisq(min, df, ncp, log.p = TRUE) # beta
   }
 
   # cannot determine critchi when implied errors are too small
@@ -95,16 +94,16 @@ semPower.compromise  <- function(effect = NULL, effect.measure = NULL,
 
   if(!bPrecisionWarning){
     # rough estm
-    start <- df + ncp/3
+    start <- df + ncp / 3
     chiCritOptim <- optim(par = c(start), fn = getErrorDiff,
-                          df=df, ncp=ncp, log.abratio = log.abratio,
-                          method='L-BFGS-B', lower=min, upper=max)
+                          df = df, ncp = ncp, log.abratio = log.abratio,
+                          method = 'L-BFGS-B', lower = min, upper = max)
 
     chiCrit <- chiCritOptim$par
-    impliedAlpha <- pchisq(chiCrit, df, lower.tail = F)
+    impliedAlpha <- pchisq(chiCrit, df, lower.tail = FALSE)
     impliedBeta <- pchisq(chiCrit, df, ncp)
-    impliedAbratio <- impliedAlpha/impliedBeta
-    impliedPower <- pchisq(chiCrit, df, ncp, lower.tail = F)
+    impliedAbratio <- impliedAlpha / impliedBeta
+    impliedPower <- pchisq(chiCrit, df, ncp, lower.tail = FALSE)
 
   }else{
     # this is overriden later
@@ -160,8 +159,8 @@ semPower.compromise  <- function(effect = NULL, effect.measure = NULL,
 #' @importFrom stats pchisq
 getErrorDiff <- function(critChiSquare, df, ncp, log.abratio){
 
-  alpha <- pchisq(critChiSquare, df, lower.tail = F, log.p = T)
-  beta <- pchisq(critChiSquare, df, ncp, log.p = T)
+  alpha <- pchisq(critChiSquare, df, lower.tail = FALSE, log.p = TRUE)
+  beta <- pchisq(critChiSquare, df, ncp, log.p = TRUE)
 
   if(is.infinite(beta) || is.infinite(alpha)){
 
@@ -170,7 +169,7 @@ getErrorDiff <- function(critChiSquare, df, ncp, log.abratio){
 
   }else{
 
-    diff <- (alpha - (log.abratio+beta))^2     # note log scale
+    diff <- (alpha - (log.abratio + beta))^2     # note log scale
 
   }
 
@@ -193,7 +192,7 @@ summary.semPower.compromise <- function(object, ...){
   if(object$bPrecisionWarning)
     cat("\n\n WARNING: Alpha and/or Beta are smaller than 1e-240. Cannot determine critical Chi-Square exactly due to machine precision.")
 
-  print(out.table, row.names = F, right = F)
+  print(out.table, row.names = FALSE, right = FALSE)
 
   if(!object$bPrecisionWarning)
     semPower.showPlot(chiCrit = object$chiCrit, ncp = object$ncp, df = object$df)

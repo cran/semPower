@@ -5,8 +5,17 @@ knitr::opts_chunk$set(
 )
 
 ## ----eval=FALSE---------------------------------------------------------------
+#  install.packages("devtools")
+#  devtools::install_github("moshagen/semPower")
+
+## ----eval=FALSE---------------------------------------------------------------
 #  ap <- semPower.aPriori(effect = .05, effect.measure = 'RMSEA',
 #                          alpha = .05, power = .80, df = 100)
+#  summary(ap)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  ap <- semPower(type = 'a-priori', effect = .05, effect.measure = 'RMSEA',
+#                 alpha = .05, power = .80, df = 100)
 #  summary(ap)
 
 ## ----eval=FALSE---------------------------------------------------------------
@@ -15,9 +24,51 @@ knitr::opts_chunk$set(
 #  summary(ph)
 
 ## ----eval=FALSE---------------------------------------------------------------
+#  ph <- semPower(type = 'post-hoc', effect = .05, effect.measure = 'RMSEA',
+#                 alpha = .05, N = 1000, df = 100)
+#  summary(ph)
+
+## ----eval=FALSE---------------------------------------------------------------
 #  cp <- semPower.compromise(effect = .05, effect.measure = 'RMSEA',
 #                             abratio = 1, N = 1000, df = 100)
 #  summary(cp)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  cp <- semPower(type = 'compromise', effect = .05, effect.measure = 'RMSEA',
+#                 abratio = 1, N = 1000, df = 100)
+#  summary(cp)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # define model using standard lavaan syntax
+#  lavmodel <- '
+#  f1 =~ x1 + x2 + x3 + x4
+#  f2 =~ x5 + x6 + x7 + x8
+#  '
+#  # obtain df
+#  semPower.getDf(lavmodel)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # a priori power analysis providing the number of indicators to define
+#  # two factors with correlation of phi and equal loading for all indicators
+#  cfapower <- semPower.powerCFA(type = 'a-priori',
+#                                phi = .2, nIndicator = c(5, 6), loadM = .5,
+#                                alpha = .05, power = .95)
+#  summary(cfapower$power)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # define correlation matrix between 3 factors
+#  phi <- matrix(c(
+#    c(1.0, 0.2, 0.5),
+#    c(0.2, 1.0, 0.3),
+#    c(0.5, 0.3, 1.0)
+#  ), byrow = T, ncol=3)
+#  # a priori power analysis providing factor correlation matrix (phi),
+#  # the number of indicators by factor, and mean and SD of loadings by factor.
+#  cfapower <- semPower.powerCFA(type = 'a-priori',
+#                                phi = phi, nullCor = c(1, 2), nIndicator = c(5, 6, 4),
+#                                loadM = c(.5, .6, .7), loadSD = c(.1, .05, 0),
+#                                alpha = .05,  power = .95)
+#  summary(cfapower$power)
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  library(lavaan)
@@ -40,7 +91,8 @@ knitr::opts_chunk$set(
 #  # define variances of f1 and f2 to be 1
 #  f1 ~~ 1*f1
 #  f2 ~~ 1*f2
-#  # define covariance (=correlation, because factor variances are 1) between the factors to be .9
+#  # define covariance (=correlation, because factor variances are 1)
+#  # between the factors to be .9
 #  f1 ~~ 0.9*f2
 #  '
 
@@ -54,7 +106,9 @@ knitr::opts_chunk$set(
 #  f1 =~ x1 + x2 + x3 + x4
 #  f2 =~ x5 + x6 + x7 + x8
 #  '
-#  summary(sem(model.h1, sample.cov = cov.pop, sample.nobs = 1000, sample.cov.rescale = F), stand = T, fit = T)
+#  summary(sem(model.h1, sample.cov = cov.pop,
+#              sample.nobs = 1000, sample.cov.rescale = F),
+#          stand = T, fit = T)
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  # define (wrong) analysis model
@@ -68,7 +122,9 @@ knitr::opts_chunk$set(
 #  f1 ~~ 1*f2
 #  '
 #  # fit analysis model to population data; note the sample.nobs are arbitrary
-#  fit.h0 <- sem(model.h0, sample.cov = cov.pop, sample.nobs = 1000, sample.cov.rescale = F, likelihood='wishart')
+#  fit.h0 <- sem(model.h0, sample.cov = cov.pop,
+#                sample.nobs = 1000, sample.cov.rescale = F,
+#                likelihood='wishart')
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  # model implied covariance matrix
@@ -226,10 +282,11 @@ semPower.powerPlot.byEffect(effect.measure = 'RMSEA', alpha = .05, N = 500,
 #  cov.pop <- fitted(sem(model.pop))$cov
 #  
 #  # get covariance matrix as implied by H0 model
-#  res.h0 <- sem(model.h0, sample.cov = cov.pop,
-#                sample.nobs = 1000, sample.cov.rescale = F, likelihood='wishart')
-#  df <- res.h0@test[[1]]$df
-#  cov.h0 <- fitted(res.h0)$cov
+#  fit.h0 <- sem(model.h0, sample.cov = cov.pop,
+#                sample.nobs = 1000, sample.cov.rescale = F,
+#                likelihood='wishart')
+#  df <- fit.h0@test[[1]]$df
+#  cov.h0 <- fitted(fit.h0)$cov
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  ph4 <- semPower.postHoc(SigmaHat = cov.h0, Sigma = cov.pop, alpha = .05, N = 1000, df = df)
@@ -238,4 +295,68 @@ semPower.powerPlot.byEffect(effect.measure = 'RMSEA', alpha = .05, N = 500,
 ## ----eval=FALSE---------------------------------------------------------------
 #  fitmeasures(res.h0, 'chisq')
 #  ph4$fmin * (ph4$N-1)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  cfapower <- semPower.powerCFA(type = 'a-priori', comparison = 'restricted',
+#                                phi = .3, nIndicator = c(3, 6), loadM = .6,
+#                                alpha = .05, power = .80)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  summary(cfapower$power)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # population model
+#  cfapower$modelPop
+#  # (incorrect) analysis model
+#  cfapower$modelAna
+
+## ----eval=FALSE---------------------------------------------------------------
+#  summary(lavaan::sem(cfapower$modelTrue, sample.cov = cfapower$Sigma,
+#                      sample.nobs = 1000, likelihood = 'wishart', sample.cov.rescale = FALSE),
+#          stand = TRUE)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  ph <- semPower.aPriori(SigmaHat = cfapower$SigmaHat, Sigma = cfapower$Sigma,
+#                         df = 1, alpha = .05, beta = .05)
+#  summary(ph)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # define correlation matrix between 3 factors
+#  phi <- matrix(c(
+#    c(1.0, 0.3, 0.7),
+#    c(0.3, 1.0, 0.4),
+#    c(0.7, 0.4, 1.0)
+#  ), byrow = T, ncol=3)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # sample loadings from normal distribution using mean and sd; same for all factors
+#  cfapower <- semPower.powerCFA(type = 'post-hoc',
+#                                phi = phi, nullCor = c(1, 2),
+#                                nIndicator = c(6, 5, 4), loadM = .5, loadSD = .1,
+#                                alpha = .05, N = 250)
+#  
+#  # sample loadings from normal distribution using mean and sd for each factor
+#  cfapower <- semPower.powerCFA(type = 'post-hoc',
+#                                phi = phi, nullCor = c(1, 2),
+#                                nIndicator = c(3, 6, 5),
+#                                loadM = c(.5, .6, .7), loadSD = c(.1, .05, 0),
+#                                alpha = .05, N = 250)
+#  
+#  # sample loadings from uniform using min-max; same for all factors
+#  cfapower <- semPower.powerCFA(type = 'post-hoc',
+#                                phi = phi, nullCor = c(1, 2),
+#                                nIndicator = c(6, 5, 4), loadMinMax = c(.3, .8),
+#                                alpha = .05, N = 250)
+#  
+#  # sample loadings from uniform using min-max for each factor
+#  loadMinMax <- matrix(c(
+#    c(.4, .6),
+#    c(.5, .8),
+#    c(.3, .7)
+#  ), byrow = T, nrow=3)
+#  cfapower <- semPower.powerCFA(type = 'post-hoc',
+#                                phi = phi, nullCor = c(1, 2),
+#                                nIndicator = c(6, 5, 4), loadMinMax = loadMinMax,
+#                                alpha = .05, N = 250)
+#  
 

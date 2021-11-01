@@ -32,7 +32,7 @@ validateInput <- function(power.type = NULL, effect = NULL, effect.measure = NUL
                           effect.min = NULL, effect.max = NULL,
                           steps = 50, linewidth = 1){
 
-  known.effects.measures <- c("F0","RMSEA","MC","GFI", "AGFI")
+  known.effects.measures <- c("F0", "RMSEA", "MC", "GFI", "AGFI")
 
   # remove list structure if length == 1
   if(is.list(effect) && length(effect) == 1) effect <- unlist(effect)
@@ -109,11 +109,11 @@ validateInput <- function(power.type = NULL, effect = NULL, effect.measure = NUL
     
     if(any(sapply(Sigma, ncol) != sapply(SigmaHat, ncol)) || any(sapply(Sigma, nrow) != sapply(SigmaHat, nrow)))
       stop("Sigma and SigmaHat must be of equal size")
-    if(any(!sapply(c(Sigma,SigmaHat), isSymmetric)))
+    if(any(!sapply(c(Sigma, SigmaHat), isSymmetric)))
       stop("Sigma and SigmaHat must be symmetric square matrices")
-    if(any(sapply(c(Sigma,SigmaHat), ncol) < 2))
+    if(any(sapply(c(Sigma, SigmaHat), ncol) < 2))
       stop("Sigma and SigmaHat must be at least of dimension 2*2")
-    if(any(sapply(c(Sigma,SigmaHat), function(x){sum(eigen(x)$values < 0) > 0})))
+    if(any(sapply(c(Sigma, SigmaHat), function(x){sum(eigen(x)$values < 0) > 0})))
       stop("Sigma and SigmaHat must be positive definite")
   }
 
@@ -134,7 +134,7 @@ validateInput <- function(power.type = NULL, effect = NULL, effect.measure = NUL
   if(power.type == "a-priori"){
     if(is.null(beta) && is.null(power))
       stop("Need to define either beta or power in a-priori power analyis")
-    if(!is.null(beta) && !is.null(power) && power != (1-beta))
+    if(!is.null(beta) && !is.null(power) && power != (1 - beta))
       stop("Either set beta or set power, but not both.")
     if(!is.null(beta))
       checkBounded(beta)
@@ -176,7 +176,7 @@ validateInput <- function(power.type = NULL, effect = NULL, effect.measure = NUL
 checkPositive <- function(x, message = NULL){
   if(is.null(message)) message <- deparse(substitute(message))
   if(is.null(x) || is.na(x) || x <= 0){
-    stop(paste(message," must be larger than zero"))
+    stop(paste(message, " must be larger than zero"))
   }
 }
 
@@ -186,11 +186,13 @@ checkPositive <- function(x, message = NULL){
 #' @param x x
 #' @param message identifier for x
 #' @param bound the boundaries, array of size two
-checkBounded <- function(x, message = NULL, bound = c(0,1)){
+#' @param inclusive whether x might lie on boundary
+checkBounded <- function(x, message = NULL, bound = c(0, 1), inclusive = FALSE){
   if(is.null(message)) message <- deparse(substitute(message))
-  if(is.null(x) || is.na(x) || x <= bound[1] || x >= bound[2]){
-    stop(paste(message," must must lie within",bound[1],'and', bound[2]))
-  }
+  inv <- is.null(x) || is.na(x)
+  if(!inv & !inclusive & (x <= bound[1] || x >= bound[2])) inv <- TRUE
+  if(!inv & inclusive & (x < bound[1] || x > bound[2])) inv <- TRUE
+  if(inv) stop(paste(message, "must must lie within", bound[1], 'and', bound[2]))
 }
 
 #' checkPositiveDefinite
@@ -208,4 +210,18 @@ checkPositiveDefinite <- function(x, message = NULL){
     stop(paste(message, " must be a symmetric square matrix"))
   if(sum(eigen(x)$values < 0) > 0)
     stop(paste(message, " must be positive definite"))
+}
+
+#' checkPowerTypes
+#'
+#' checks whether type is one of 'a-priori', 'post-hoc', or 'compromise'.
+#' @param type type
+#' @return  valid type
+checkPowerTypes <- function(type){
+  if(is.null(type) | length(type) != 1 | typeof(type) != 'character') stop('Type must be one of a-priori, post-hoc, or compromise.')
+  type <- tolower(type)
+  if(type == 'a priori' | type == 'apriori'| type == 'a_priori') type = 'a-priori'
+  if(type == 'post hoc' | type == 'posthoc'| type == 'post_hoc') type = 'post-hoc'
+  if(!type %in% c('a-priori','post-hoc','compromise')) stop('Type must be one of a-priori, post-hoc, or compromise.')
+  type
 }
