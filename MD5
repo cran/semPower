@@ -1,5 +1,6 @@
-166fdbdfc85a20ff3d7db6b459f1bf08 *DESCRIPTION
+1d9260f9999ae9d615d829ea5f9378e4 *DESCRIPTION
 d49a6c4380b52fbf4bcf1449f8265dd2 *NAMESPACE
+fca120c7fd02091b3d4c382bd7f402b5 *NEWS
 e1b8e0f76db981172105fdb55285ada7 *R/aPriori.R
 35c8f493870474b80594996c794d30bf *R/compromise.R
 343dbd8e8f6b17dbf9a0446954b8fb72 *R/convenienceFunctions.R
@@ -11,11 +12,11 @@ c2392b264d17cf6614d719ea217ed983 *R/plots.R
 e82da042ef4e85bb26f39b726bea6076 *R/postHoc.R
 341fce3a4264c62dde2b9759df979911 *R/semPower-package.R
 c3f904332dc032f89f0267be36a2ac01 *R/semPower.R
-185a0f12d7a466953cd9fc9a50147b9b *R/simulate.R
+48d2b0ba1beafb47d83f70047beabb0b *R/simulate.R
 ccd929494f4b15e6c4b755984deee466 *R/validator.R
-b0b45cbcf893665169d1c4c7f237db7e *R/zUnitTests.R
+173ba2b9b9a540c617865aabbddd326d *R/zUnitTests.R
 5d16c73905be1c51388a51596e04208d *README.md
-5f38200ee67a168ed4871ea8cb0edb8c *build/vignette.rds
+90c85aa94d153de86c5606bbe7e08f71 *build/vignette.rds
 189608235d81585bc7c371e8708e9874 *inst/doc/semPower.Rmd
 c56662c102abb0bc773bd47654104ea3 *inst/doc/semPower.html
 35febb9075cac4ff1bd53de86c00d668 *man/checkBounded.Rd

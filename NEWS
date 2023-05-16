@@ -1,0 +1,11 @@
+semPower 2.0.1 (May 2023)
+===========
+
+* update to R 4.3.0
+* make futures work
+
+
+semPower 2.0.0 (May 2023)
+===========
+
+* first CRAN release of semPower 2
