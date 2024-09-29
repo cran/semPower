@@ -1,7 +1,7 @@
 Type: Package
 Package: semPower
 Title: Power Analyses for SEM
-Version: 2.1.0
+Version: 2.1.1
 Authors@R: c(
     person("Morten", "Moshagen", , "morten.moshagen@uni-ulm.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-2929-7288")),
@@ -18,11 +18,11 @@ Suggests: bookdown, covsim, doFuture, foreach, future, knitr, lavaan,
         mnonr, progressr, rmarkdown,
 VignetteBuilder: knitr
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 NeedsCompilation: no
-Packaged: 2023-11-14 17:04:43 UTC; morten
+Packaged: 2024-09-29 10:25:37 UTC; morten
 Author: Morten Moshagen [aut, cre] (<https://orcid.org/0000-0002-2929-7288>),
   Martina Bader [aut] (<https://orcid.org/0000-0002-5706-8933>)
 Maintainer: Morten Moshagen <morten.moshagen@uni-ulm.de>
 Repository: CRAN
-Date/Publication: 2023-11-14 18:50:02 UTC
+Date/Publication: 2024-09-29 10:40:03 UTC

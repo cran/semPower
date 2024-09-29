@@ -169,6 +169,10 @@ semPower.powerLav <- function(type,
     Sigma <- lapply(modelPop, function(x) orderLavCov(lavaan::fitted(lavaan::sem(x))[['cov']]))
     mu <- lapply(modelPop, function(x) orderLavMu(lavaan::fitted(lavaan::sem(x))[['mean']]))
   }
+  # make sure sigma/mu are properly ordered
+  Sigma <- lapply(Sigma, function(x) orderLavCov(x))
+  if(!is.null(mu)) mu <- lapply(mu, function(x) orderLavMu(x))
+  
   nGroups <- length(Sigma)
   
 
@@ -1130,7 +1134,7 @@ semPower.powerRegression <- function(type, comparison = 'restricted',
 #' So either `Lambda`, or `loadings`, or `nIndicator` and `loadM` need to be defined.
 #' If the model contains observed variables only, use `Lambda = diag(x)` where `x` is the number of variables.
 #'
-#' Note that in case of a simple mediation model involving three variables, the order of the factors is X, M, Y, i. e., the first factor is treated as X, the second as M, and the thrird as Y. In case of a more complex mediation defined via the `Beta` matrix, the order of factors matches the order of `Beta`. 
+#' Note that in case of a simple mediation model involving three variables, the order of the factors is X, M, Y, i. e., the first factor is treated as X, the second as M, and the third as Y. In case of a more complex mediation defined via the `Beta` matrix, the order of factors matches the order of `Beta`. 
 #' 
 #' Additional arguments related to the requested type of **power analysis**:
 #' * `alpha`: The alpha error probability. Required for `type = 'a-priori'` and `type = 'post-hoc'`.
@@ -1377,6 +1381,7 @@ semPower.powerMediation <- function(type, comparison = 'restricted',
   
   ### create model strings
   if(!isMultigroup) model <- generated[['modelTrueCFA']] else model <- generated[[1]][['modelTrueCFA']]
+  if(isObserved) model <- '' # dummy latents don't work with non-linear constraints
   # add mediation structure
   for(f in 1:ncol(B[[1]])){
     fidx <- unique(unlist(lapply(B, function(x) which(x[f, ] != 0))))
@@ -1433,6 +1438,16 @@ semPower.powerMediation <- function(type, comparison = 'restricted',
   }else{
     stop('nullEffect not defined.')
   }
+  
+  # for observed only models, replace factor labels (f) by observed variables as found in sigma
+  if(isObserved){
+    if(isMultigroup) tSigma <- generated[[1]][['Sigma']] else tSigma <- generated[['Sigma']] 
+    ff <- paste0('f', 1:ncol(tSigma))
+    for(i in 1:ncol(tSigma)){
+      model <- gsub(ff[i], colnames(tSigma)[i], model)  # later reused for modelH1
+      modelH0 <- gsub(ff[i], colnames(tSigma)[i], modelH0)
+    }
+  } 
 
   # enforce invariance constraints in the multigroup case
   if(isMultigroup){
@@ -4237,6 +4252,7 @@ semPower.powerPath <- function(type, comparison = 'restricted',
   if(nullEffect == 'betax=betaz' && any(lapply(nullWhich, function(x) length(x)) != 2)) stop('nullWhich must be a list containing vectors of size two each.')
   if(nullEffect == 'betaa=betab' && !isMultigroup) stop('Beta must be a list for multiple group comparisons.')
   if(nullEffect != 'betaa=betab' && isMultigroup) stop('Multiple group models are only valid for nullEffect = "betaA=betaB".')
+  if(nullEffect != 'betax=betaz' && is.list(nullWhich)) stop('nullWhich may only contain a single vector of size two unless nullEffect = "betaX = betaZ".')
   if(nullEffect == 'beta=0' && any(unlist(lapply(Beta, function(x) x[nullWhich[1], nullWhich[2]] == 0)))) stop('nullWhich must not refer to a slope with a population value of zero.')
   if(!is.null(nullWhichGroups)) lapply(nullWhichGroups, function(x) checkBounded(x, 'All elements in nullWhichGroups', bound = c(1, length(Beta)), inclusive = TRUE))
   if(!is.list(nullWhich)) nullWhich <- list(nullWhich)
@@ -4385,8 +4401,8 @@ semPower.powerPath <- function(type, comparison = 'restricted',
 #' Beyond the arguments explicitly contained in the function call, additional arguments 
 #' are required specifying the factor model and the requested type of power analysis.  
 #' 
-#' Additional arguments related to the **definition of the factor model** concerning the specific factors and the covariate(s):
-#' * `Lambda`: The factor loading matrix (with the number of columns equaling the number of factors).
+#' Additional arguments related to the **definition of the factor model** concerning the specific factors and the covariate(s). The loadings on the bifactor must be provided via `bfLoadings`.
+#' * `Lambda`: The factor loading matrix (with the number of columns equaling the number of specific factors and covariates).
 #' * `loadings`: Can be used instead of `Lambda`: Defines the primary loadings for each factor in a list structure, e. g. `loadings = list(c(.5, .4, .6), c(.8, .6, .6, .4))` defines a two factor model with three indicators loading on the first factor by .5, , 4., and .6, and four indicators loading on the second factor by .8, .6, .6, and .4.
 #' * `nIndicator`: Can be used instead of `Lambda`: Used in conjunction with `loadM`. Defines the number of indicators by factor, e. g., `nIndicator = c(3, 4)` defines a two factor model with three and four indicators for the first and second factor, respectively. `nIndicator` can also be a single number to define the same number of indicators for each factor. 
 #' * `loadM`: Can be used instead of `Lambda`: Used in conjunction with `nIndicator`. Defines the loading either for all indicators (if a single number is provided) or separately for each factor (if a vector is provided), e. g. `loadM = c(.5, .6)` defines the loadings of the first factor to equal .5 and those of the second factor do equal .6.
@@ -4640,6 +4656,11 @@ semPower.powerBifactor <- function(type, comparison = 'restricted',
   ### create Lambda
   # sLambda only contains specific factors and covariate(s)
   sLambda <- args[['Lambda']]
+  if(!is.null(sLambda)){
+    if(!is.list(sLambda)) sLambda <- list(sLambda)
+    # assume same measurement model in the multigroup case unless specified otherwise
+    if(isMultigroup && length(sLambda) == 1) sLambda <- lapply(seq(nGroups), function(x) sLambda[[1]])
+  }
   if(is.null(sLambda)){
     sLambda <- lapply(seq(nGroups), function(x){
       if(is.list(args[['loadings']][[1]]) || 
@@ -4652,7 +4673,6 @@ semPower.powerBifactor <- function(type, comparison = 'restricted',
       }
     })
   }
-  if(isMultigroup && length(sLambda) == 1) sLambda <- lapply(seq(nGroups), function(x) rep(sLambda[[1]], nGroups))
   if(any(unlist(lapply(seq(nGroups), function(g) lapply(seq(numBifactors), function(f){
     length(bfLoadings[[g]][[f]]) < sum(sLambda[[g]][ , bfWhichFactors[[g]][[f]]] != 0)
   }))))) stop('Bifactors must have at least the same number of indicators as the comprised by the respective specific factors. If you want an indicator only loading on a specific factor, assign the respective bifactor loading a value of zero.')
