@@ -215,7 +215,12 @@ validateInput <- function(power.type = NULL, effect = NULL, effect.measure = NUL
       
       if(power.type != 'powerplot.byEffect'){
         if(is.null(effect)) stop('Effect is not defined.')
-        lapply(effect, checkPositive, message = effect.measure)
+        if(is.list(effect)){
+          lapply(effect, function(x) if(is.null(x) || is.na(x) || x < -1e-8) stop(paste(effect.measure, 'must not be negative')))
+          if(sum(unlist(effect)) <= 1e-10) stop(paste(effect.measure, 'must be larger than zero'))
+        }else{
+          lapply(effect, function(x) checkPositive(x, message = effect.measure))
+        }
       }
       
       if(effect.measure == "GFI" || effect.measure == "AGFI"){
@@ -333,7 +338,7 @@ validateInput <- function(power.type = NULL, effect = NULL, effect.measure = NUL
   if(power.type == "a-priori"){
     if(is.null(beta) && is.null(power))
       stop("Need to define either beta or power in a-priori power analyis")
-    if(!is.null(beta) && !is.null(power) && power != (1 - beta))
+    if(!is.null(beta) && !is.null(power) && abs((power - (1 - beta))) > 1e-8)
       stop("Either set beta or set power, but not both.")
     if(!is.null(beta))
       checkBounded(beta)
@@ -403,7 +408,7 @@ checkBounded <- function(x, message = NULL, bound = c(0, 1), inclusive = FALSE){
 checkPositiveDefinite <- function(x, message = NULL, stop = TRUE){
   if(is.null(message)) message <- deparse(substitute(x))
   checkSymmetricSquare(x)
-  if(sum(eigen(x)$values < 0) > 0){
+  if(sum(eigen(x)$values <= 0) > 0){
     if(stop) stop(paste(message, " must be positive definite"))
     if(!stop) warning(paste(message, " must be positive definite"))
   }
@@ -510,9 +515,9 @@ checkDataGenerationTypes <- function(type){
 #' @param type type
 #' @return Returns cleaned data generation type
 checkMissingTypes <- function(type){
-  if(is.null(type) || length(type) != 1 || typeof(type) != 'character') stop('Missing mechanism must be one of "mcar", "mar", or "mnar".')
+  if(is.null(type) || length(type) != 1 || typeof(type) != 'character') stop('Missing mechanism must be one of "mcar", "mar", or "nmar".')
   type <- tolower(trimws(type))
-  if(!type %in% c('mcar', 'mar', 'nmar')) stop('Missing mechanism must be one of "mcar", "mar", or "mnar"')
+  if(!type %in% c('mcar', 'mar', 'nmar')) stop('Missing mechanism must be one of "mcar", "mar", or "nmar"')
   type
 }
 

@@ -77,7 +77,8 @@
 #' * `missingVarProp`: can be used instead of `missingVars`: The proportion of variables containing missing data (defaults to zero).
 #' * `missingProp`: The proportion of missingness for variables containing missing data (defaults to zero), either a single value or a vector giving the probabilities for each variable.
 #' * `missingMechanism`: The missing data mechanism, one of `MCAR` (the default), `MAR`, or `NMAR`.
-#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doSNOW` package.
+#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doFuture` package.
+#' * `futureStrategy`: A string specifying the strategy used in parallel processing (when `nCores` >  1). Defaults to `'multisession'`. This is passed to the `plan` method of the `doFuture` package. See the `doFuture` package for valid options.
 #' 
 #' `type = 'IG'` implements the independent generator approach (IG, Foldnes & Olsson, 2016) approach 
 #' specifying third and fourth moments of the marginals, and thus requires that skewness (`skewness`) and excess kurtosis (`kurtosis`) for each variable are provided as vectors. This requires the `covsim` package.
@@ -580,7 +581,7 @@ semPower.powerRICLPM <- function(type, comparison = 'restricted',
   if(is.null(nullWhich) && nWaves == 2) nullWhich <- 1
   if(is.null(nullWhich) && nWaves > 2){
     msg <- 'nullWhich must be defined when there are more than 2 waves and relevant parameters are not constant across waves'
-    if(is.null(waveEqual) && !nullEffect %in% c('autoregx', 'autoregy', 'crossedx', 'crossedy')) stop(msg) 
+    if(is.null(waveEqual) && !nullEffect %in% c('autoregx', 'autoregy', 'crossedx', 'crossedy', 'corbxby=0')) stop(msg) 
     if(!'autoregx' %in% waveEqual && nullEffect %in% c('autoregx=0', 'autoregx=autoregy')) stop(msg) 
     if(!'autoregy' %in% waveEqual && nullEffect %in% c('autoregy=0', 'autoregx=autoregy')) stop(msg) 
     if(!'crossedx' %in% waveEqual && nullEffect %in% c('crossedx=0', 'crossedx=crossedy')) stop(msg) 
@@ -681,6 +682,23 @@ semPower.powerRICLPM <- function(type, comparison = 'restricted',
                                  metricInvariance = metricInvarianceFactors,
                                  nGroups = nGroups)
   
+  if(!isMultigroup) Lambda <- generated[['Lambda']] else Lambda <- generated[[1]][['Lambda']]
+  
+  ### warn if loadings dont satisfy metric invariance
+  # check for equality across waves
+  if(metricInvariance){
+    lapply(metricInvarianceFactors, function(mif){
+      mIdx <- sapply(mif, function(x) (which(Lambda[ , x] != 0))) # non zero loadings indices
+      rIdx <- lapply(seq(nrow(mIdx)), function(r) unlist(lapply(seq(length(mIdx[r,])), function(c)  mIdx[r, c] + (mif[c]-1) * nrow(Lambda)))) # adapt indices to vech
+      if(any(unlist(lapply(rIdx, function(x) length(unique(c(Lambda)[x])) != 1)))) warning('At least one loading differs across waves, violating metric invariance. Verify that this is intended.')
+    })
+  }
+  # check for equality across groups
+  if(isMultigroup){
+    lambdas <- sapply(generated, '[[', 'Lambda')
+    if(any(apply(lambdas, 1, function(x) length(unique(x)) != 1))) warning('At least one loading differs across groups, violating metric invariance. Verify that this is intended.')
+  }  
+  
   
   ### create ana model string
   if(!isMultigroup) modelCFA <- generated[['modelTrueCFA']] else modelCFA <- generated[[1]][['modelTrueCFA']]
@@ -730,7 +748,6 @@ semPower.powerRICLPM <- function(type, comparison = 'restricted',
   
   # add autocorrelated residuals
   if(autocorResiduals){
-    if(!isMultigroup) Lambda <- generated[['Lambda']] else Lambda <- generated[[1]][['Lambda']]
     # do this only when there is at least one latent variable
     if(nrow(Lambda) > 2*nWaves){
       autocorResidualsFactors <- metricInvarianceFactors  # same structure 

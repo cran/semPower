@@ -108,7 +108,8 @@
 #' * `missingVarProp`: can be used instead of `missingVars`: The proportion of variables containing missing data (defaults to zero).
 #' * `missingProp`: The proportion of missingness for variables containing missing data (defaults to zero), either a single value or a vector giving the probabilities for each variable.
 #' * `missingMechanism`: The missing data mechanism, one of `MCAR` (the default), `MAR`, or `NMAR`.
-#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doSNOW` package.
+#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doFuture` package.
+#' * `futureStrategy`: A string specifying the strategy used in parallel processing (when `nCores` >  1). Defaults to `'multisession'`. This is passed to the `plan` method of the `doFuture` package. See the `doFuture` package for valid options.
 #' 
 #' `type = 'IG'` implements the independent generator approach (IG, Foldnes & Olsson, 2016) approach 
 #' specifying third and fourth moments of the marginals, and thus requires that skewness (`skewness`) and excess kurtosis (`kurtosis`) for each variable are provided as vectors. This requires the `covsim` package.
@@ -222,11 +223,11 @@ semPower.powerPath <- function(type, comparison = 'restricted',
     if(!is.list(Psi)) Psi <- list(Psi)
     if(isMultigroup && (length(unique(unlist(lapply(Psi, ncol)))) > 1 || length(unique(unlist(lapply(Psi, nrow)))) > 1)) stop('Psi must be of same dimension for all groups') 
     lapply(Psi, function(x) checkSymmetricSquare(x, 'Psi'))
-    if(any(unlist(lapply(Psi, function(x) any(eigen(x)$values <= 0))))) warning('Phi is not positive definite.')
+    if(any(unlist(lapply(Psi, function(x) any(eigen(x)$values <= 0))))) warning('Psi is not positive definite.')
     if(ncol(Psi[[1]]) != ncol(Beta[[1]])) stop('Beta and Psi must be of same dimension.')
   }
   if(is.null(nullWhich)) stop('nullWhich must not be NULL.')
-  if(any(unlist(lapply(nullWhich, function(x) any(x > ncol(Beta[[1]])))))) stop('At least one element in nullWhich is an out of bounds index concerning Beta.')
+  if(any(unlist(lapply(nullWhich, function(x) any(x > ncol(Beta[[1]])) || any(x == 0))))) stop('At least one element in nullWhich is an out of bounds index concerning Beta.')
   if(nullEffect == 'betax=betaz' && any(lapply(nullWhich, function(x) length(x)) != 2)) stop('nullWhich must be a list containing vectors of size two each.')
   if(nullEffect == 'betaa=betab' && !isMultigroup) stop('Beta must be a list for multiple group comparisons.')
   if(nullEffect != 'betaa=betab' && isMultigroup) stop('Multiple group models are only valid for nullEffect = "betaA=betaB".')
@@ -247,6 +248,13 @@ semPower.powerPath <- function(type, comparison = 'restricted',
                                    Psi = if(!isMultigroup) Psi[[1]] else Psi, 
                                    useReferenceIndicator = TRUE, ...)
   }
+  
+  # warn if loadings dont satisfy metric invariance
+  if(isMultigroup){
+    lambdas <- sapply(generated, '[[', 'Lambda')
+    if(any(apply(lambdas, 1, function(x) length(unique(x)) != 1))) warning('At least one loading differs across groups, violating metric invariance. Verify that this is intended.')
+  }
+  
   
   ### create model strings
   # we need to use modelTrueCFA and define regression relations here,

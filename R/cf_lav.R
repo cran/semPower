@@ -48,7 +48,8 @@
 #' * `missingVarProp`: can be used instead of `missingVars`: The proportion of variables containing missing data (defaults to zero).
 #' * `missingProp`: The proportion of missingness for variables containing missing data (defaults to zero), either a single value or a vector giving the probabilities for each variable.
 #' * `missingMechanism`: The missing data mechanism, one of `MCAR` (the default), `MAR`, or `NMAR`.
-#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doSNOW` package.
+#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doFuture` package.
+#' * `futureStrategy`: A string specifying the strategy used in parallel processing (when `nCores` >  1). Defaults to `'multisession'`. This is passed to the `plan` method of the `doFuture` package. See the `doFuture` package for valid options.
 #' 
 #' `type = 'IG'` implements the independent generator approach (IG, Foldnes & Olsson, 2016) approach 
 #' specifying third and fourth moments of the marginals, and thus requires that skewness (`skewness`) and excess kurtosis (`kurtosis`) for each variable are provided as vectors. This requires the `covsim` package.
@@ -162,16 +163,25 @@ semPower.powerLav <- function(type,
   if(!is.null(modelPop) && !is.list(modelPop)) modelPop <- list(modelPop)
   if(!is.null(Sigma) && !is.list(Sigma)) Sigma <- list(Sigma)
   if(!is.null(mu) && !is.list(mu)) mu <- list(mu)
-  
+  # initially supply means even if there is no meanstructure, bc lav (7-1 onwards) tends to complain
+  if(is.null(mu)){
+    mu <- lapply(Sigma, function(x) rep(0, ncol(x)))
+    for(i in seq(mu)){
+      names(mu[[i]]) <- colnames(Sigma[[1]])
+    }
+  }
 
   # determine population Sigma / mu
   if(is.null(Sigma)){
-    Sigma <- lapply(modelPop, function(x) orderLavCov(lavaan::fitted(lavaan::sem(x))[['cov']]))
-    mu <- lapply(modelPop, function(x) orderLavMu(lavaan::fitted(lavaan::sem(x))[['mean']]))
+    lavFitted <- lapply(modelPop, function(x) lavaan::fitted(lavaan::sem(x)))
+    Sigma <- lapply(lavFitted, function(x) orderLavCov(x[['cov']]))
+    # lav (7-1 onwards) does not complain about null mu when it infers no meanstructure, so be happy about orderLavMu returning NULL
+    mu <- lapply(lavFitted, function(x) orderLavMu(x[['mean']]))
+  }else{
+    # make sure sigma/mu are properly ordered
+    Sigma <- lapply(Sigma, function(x) orderLavCov(x))
+    if(!is.null(mu[[1]])) mu <- lapply(mu, function(x) orderLavMu(x))
   }
-  # make sure sigma/mu are properly ordered
-  Sigma <- lapply(Sigma, function(x) orderLavCov(x))
-  if(!is.null(mu)) mu <- lapply(mu, function(x) orderLavMu(x))
   
   nGroups <- length(Sigma)
   
@@ -192,6 +202,7 @@ semPower.powerLav <- function(type,
     } 
     if(fittingFunction == 'DWLS'){
       lavOptions[['WLS.V']] <- lapply(seq(nGroups), function(x) getWLSv(Sigma[[x]], mu[[x]], diag = TRUE))
+      lavOptions[['ordered']] <- FALSE
       if(nGroups == 1) lavOptions[['WLS.V']] <- lavOptions[['WLS.V']][[1]]
     } 
 
@@ -222,6 +233,8 @@ semPower.powerLav <- function(type,
       SigmaHat <- list(orderLavCov(lavaan::fitted(modelH0Fit)[['cov']]))
       muHat <- list(orderLavMu(lavaan::fitted(modelH0Fit)[['mean']]))
     }
+    if(is.null(mu[[1]]) && !is.null(muHat[[1]])) mu <- muHat   # lav sometimes computes muhat despite NULL mu is provided, i.e. lav incorrectly assumes meanstructure
+    
     df <- dfH0 <- modelH0Fit@test[['standard']][['df']]  # this is probably invalid for estm with adjusted df
     
     # get H1 comparison model and deltaF
@@ -289,7 +302,7 @@ semPower.powerLav <- function(type,
       if(any(fminH1 > 1e-6)) warning(paste0('H1 model yields imperfect fit (F0 = ', round(unlist(fminH1)[which(unlist(fminH1) > 1e-6)[1]], 6), '). This may happen if the H1 model contains restrictions on parameters (such as invariance constraints) that actually differ in the population. Verify that this is intended.'))
       df <- (dfH0 - dfH1)
     }else if (!is.null(modelH1) && !fitH1model){
-      df <- df - semPower.getDf(modelH1)
+      df <- df - semPower.getDf(modelH1, nGroups = nGroups)
     }
 
     # we use sigma for the comparison with the saturated model (so we also get additional fitindices) 

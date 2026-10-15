@@ -58,9 +58,9 @@ semPower.compromise  <- function(effect = NULL, effect.measure = NULL,
 
 
   # determine max/min chi for valid alpha/beta prob
-  max <- min <- NA
+  maxChi <- minChi <- NA
   # central chi always gives result up to 1e-320
-  max <- qchisq(log(1e-320), df, lower.tail = FALSE, log.p = TRUE)
+  maxChi <- qchisq(log(1e-320), df, lower.tail = FALSE, log.p = TRUE)
 
   # non-central chi accuracy is usually lower, depending on df and ncp
   pmin <- -Inf
@@ -68,19 +68,20 @@ semPower.compromise  <- function(effect = NULL, effect.measure = NULL,
   while(is.infinite(pmin)){
     testp <- testp * 10
     testv <- max(log(1e-320), (log.abratio + log(testp)))
-    min <- qchisq(testv, df, ncp, log.p = TRUE)
-    pmin <- pchisq(min, df, ncp, log.p = TRUE) # beta
+    minChi <- qchisq(testv, df, ncp, log.p = TRUE)
+    pmin <- pchisq(minChi, df, ncp, log.p = TRUE) # beta
   }
 
   # cannot determine critChi when implied errors are too small
-  bPrecisionWarning <- (min > max)
+  bPrecisionWarning <- (minChi > maxChi)
 
   if(!bPrecisionWarning){
     # rough estm
     start <- df + ncp / 3
+    start <- min(max(start, minChi), maxChi) # make sure we start in proper bounds
     chiCritOptim <- optim(par = c(start), fn = getErrorDiff,
                           df = df, ncp = ncp, log.abratio = log.abratio,
-                          method = 'L-BFGS-B', lower = min, upper = max)
+                          method = 'L-BFGS-B', lower = minChi, upper = maxChi)
 
     chiCrit <- chiCritOptim$par
     impliedAlpha <- pchisq(chiCrit, df, lower.tail = FALSE)
@@ -119,8 +120,8 @@ semPower.compromise  <- function(effect = NULL, effect.measure = NULL,
     agfi = fit[['agfi']],
     srmr = fit[['srmr']],
     cfi = fit[['cfi']],
-    max = max,
-    min = min,
+    max = maxChi,
+    min = minChi,
     bPrecisionWarning = bPrecisionWarning,
     plotShow = if('plotShow' %in% names(list(...))) list(...)[['plotShow']] else TRUE,
     plotLinewidth = if('plotLinewidth' %in% names(list(...))) list(...)[['plotLinewidth']] else 1, 
@@ -151,7 +152,7 @@ getErrorDiff <- function(critChiSquare, df, ncp, log.abratio){
   if(is.infinite(beta) || is.infinite(alpha)){
 
     warning('Alpha or beta are too small.')
-    diff <- 0
+    diff <- 1e100
 
   }else{
 

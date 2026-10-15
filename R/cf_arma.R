@@ -64,7 +64,7 @@
 #' * `nIndicator`: Can be used instead of `Lambda`: Used in conjunction with `loadM`. Defines the number of indicators by factor, e. g., `nIndicator = c(3, 4)` defines a two factor model with three and four indicators for the first and second factor, respectively. `nIndicator` can also be a single number to define the same number of indicators for each factor. 
 #' * `loadM`: Can be used instead of `Lambda`: Used in conjunction with `nIndicator`. Defines the loading either for all indicators (if a single number is provided) or separately for each factor (if a vector is provided), e. g. `loadM = c(.5, .6)` defines the loadings of the first factor to equal .5 and those of the second factor do equal .6.
 #' 
-#' So either `Lambda`, or `loadings`, or `nIndicator` and `loadM` need to be defined. Note that neither may contain the noise factors.
+#' So either `Lambda`, or `loadings`, or `nIndicator` and `loadM` need to be defined. Neither may contain the noise factors. In a multigroup structure, only provide the loadings for a single group.
 #' If the model contains observed variables only, use `Lambda = diag(x)` where `x` is the number of variables.
 #'
 #' The order of the factors is (X1, X2, ..., X_nWaves).
@@ -84,7 +84,8 @@
 #' * `missingVarProp`: can be used instead of `missingVars`: The proportion of variables containing missing data (defaults to zero).
 #' * `missingProp`: The proportion of missingness for variables containing missing data (defaults to zero), either a single value or a vector giving the probabilities for each variable.
 #' * `missingMechanism`: The missing data mechanism, one of `MCAR` (the default), `MAR`, or `NMAR`.
-#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doSNOW` package.
+#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doFuture` package.
+#' * `futureStrategy`: A string specifying the strategy used in parallel processing (when `nCores` >  1). Defaults to `'multisession'`. This is passed to the `plan` method of the `doFuture` package. See the `doFuture` package for valid options.
 #' 
 #' `type = 'IG'` implements the independent generator approach (IG, Foldnes & Olsson, 2016) approach 
 #' specifying third and fourth moments of the marginals, and thus requires that skewness (`skewness`) and excess kurtosis (`kurtosis`) for each variable are provided as vectors. This requires the `covsim` package.
@@ -519,12 +520,13 @@ semPower.powerARMA <- function(type, comparison = 'restricted',
     if(nullEffect %in% 'mvavglag2=0' && !'mvavglag2' %in% waveEqual && nWaves > 3) stop(msg)
     if(nullEffect %in% 'mvavglag3=0' && !'mvavglag3' %in% waveEqual && nWaves > 4) stop(msg)
     if(nullEffect %in% 'vara=varb' && !'var' %in% waveEqual) stop(msg)
-    if(nullEffect %in% 'meana=meanb' && !'var' %in% waveEqual) stop(msg)
-    nullWhich <- 1 # proper default for all remaining cases
+    if(nullEffect %in% 'meana=meanb' && !'mean' %in% waveEqual) stop(msg)
+    nullWhich <- if(nullEffect == 'meana=meanb') 2 else 1   # proper defaults for all remaining cases
   }
   if(!is.null(nullWhich)){
     if(!is.numeric(nullWhich) || length(nullWhich) > 1) stop('nullWhich must be a single number.')
-    if(nullWhich < 1 || nullWhich > (nWaves - 1)) stop('nullWhich must lie between 1 and nWaves - 1.')
+    if(nullEffect != 'meana=meanb' && (nullWhich < 1 || nullWhich > (nWaves - 1))) stop('nullWhich must lie between 1 and nWaves - 1.')
+    if(nullEffect == 'meana=meanb' && (nullWhich < 2 || nullWhich > nWaves)) stop('The first mean is fixed to zero, so nullWhich must lie between 2 and nWaves when nullEffect = "meanA = meanB".')
     if(nullEffect %in% c('autoreglag2=0','autoreglag2', 'mvavglag2=0', 'mvavglag2') && nullWhich > (nWaves - 2)) stop('For lag2 effects, nullWhich must lie between 1 and nWaves - 2.')
     if(nullEffect %in% c('autoreglag3=0','autoreglag3', 'mvavglag3=0', 'mvavglag3') && nullWhich > (nWaves - 3)) stop('For lag3 effects, nullWhich must lie between 1 and nWaves - 3.')
   }
@@ -539,7 +541,15 @@ semPower.powerARMA <- function(type, comparison = 'restricted',
   }
   if(ncol(Lambda) != nWaves) stop('Number of factors must be equal to nWaves.')
   
-  Lambda <- cbind(matrix(0, nrow = nrow(Lambda), ncol = nWaves), Lambda)  # add noise factors
+  # warn if loadings dont satisfy metric invariance
+  if(invariance){
+    mIdx <- sapply(seq(ncol(Lambda)), function(x) (which(Lambda[ , x] != 0))) # non zero loadings indices
+    rIdx <- lapply(seq(nrow(mIdx)), function(r) unlist(lapply(seq(length(mIdx[r,])), function(c)  mIdx[r, c] + (c-1) * nrow(Lambda)))) # adapt indices to vech
+    if(any(unlist(lapply(rIdx, function(x) length(unique(c(Lambda)[x])) != 1)))) warning('At least one loading differs across waves, violating metric invariance. Verify that this is intended.')
+  }
+  
+  # add noise factors
+  Lambda <- cbind(matrix(0, nrow = nrow(Lambda), ncol = nWaves), Lambda)  
   Lambda <- rep(list(Lambda), nGroups)  # require same measurement model across groups
   
   ### create Beta
@@ -701,7 +711,7 @@ semPower.powerARMA <- function(type, comparison = 'restricted',
   if(autocorResiduals){
     # do this only when there is at least one latent variable
     if(nrow(Lambda) > nWaves){
-      autocorResidualsFactors <- metricInvarianceFactors  # same structure 
+      autocorResidualsFactors <- list(seq((nWaves + 1), 2*nWaves))  # same structure as metricInvarianceFactors
       tok <- list()
       for(x in seq_along(autocorResidualsFactors)){
         ci <- lapply(autocorResidualsFactors[[x]], function(f) paste0('x', which(Lambda[, f] != 0)))
@@ -829,7 +839,7 @@ semPower.powerARMA <- function(type, comparison = 'restricted',
   if(c('mvavg') %in% waveEqual) modelH1 <- gsub(paste(pMvAvg, collapse = '|'), 'pn', modelH1)
   if(c('mvavglag2') %in% waveEqual) modelH1 <- gsub(paste(pMvAvgLag2, collapse = '|'), 'pn2', modelH1)
   if(c('mvavglag3') %in% waveEqual) modelH1 <- gsub(paste(pMvAvgLag3, collapse = '|'), 'pn3', modelH1)
-  # wave-equal contraints for means and vars do not include first measurement
+  # wave-equal constraints for means and vars do not include first measurement
   if(c('var') %in% waveEqual) modelH1 <- gsub(paste(pNoiseVar[-1], collapse = '|'), 'pvn', modelH1)
   if(c('mean') %in% waveEqual) modelH1 <- gsub(paste(pMeans[-1], collapse = '|'), 'pmf', modelH1)
   
@@ -844,14 +854,14 @@ semPower.powerARMA <- function(type, comparison = 'restricted',
   if(c('mvavg') %in% nullEffect) modelH0 <- gsub(paste(pMvAvg, collapse = '|'), 'pn', modelH0)
   if(c('mvavglag2') %in% nullEffect) modelH0 <- gsub(paste(pMvAvgLag2, collapse = '|'), 'pn2', modelH0)
   if(c('mvavglag3') %in% nullEffect) modelH0 <- gsub(paste(pMvAvgLag3, collapse = '|'), 'pn3', modelH0)
-  # wave-equal contraints for means and vars do not include first measurement
+  # wave-equal constraints for means and vars do not include first measurement
   if(c('var') %in% nullEffect) modelH0 <- gsub(paste(pNoiseVar[-1], collapse = '|'), 'pvn', modelH0)
   if(c('mean') %in% nullEffect) modelH0 <- gsub(paste(pMeans[-1], collapse = '|'), 'pmf', modelH0)
   
   # zero constraints:
   if('autoreg=0' %in% nullEffect){
     if('autoreg' %in% waveEqual){
-      modelH0 <- gsub('pf', '0', modelH0)
+      modelH0 <- gsub('\\bpf\\b', '0', modelH0)
     }else{
       modelH0 <- gsub(pAutoregX[nullWhich], '0', modelH0)
     }
@@ -872,7 +882,7 @@ semPower.powerARMA <- function(type, comparison = 'restricted',
   }
   if('mvavg=0' %in% nullEffect){
     if('mvavg' %in% waveEqual){
-      modelH0 <- gsub('pn', '0', modelH0)
+      modelH0 <- gsub('\\bpn\\b', '0', modelH0)
     }else{
       modelH0 <- gsub(pMvAvg[nullWhich], '0', modelH0)
     }

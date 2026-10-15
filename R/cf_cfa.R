@@ -61,7 +61,8 @@
 #' * `missingProp`: The proportion of missingness for variables containing missing data (defaults to zero), either a single value or a vector giving the probabilities for each variable.
 #' * `missingMechanism`: The missing data mechanism, one of `MCAR` (the default), `MAR`, or `NMAR`.
 #' The approaches generating non-normal data require additional arguments detailed below.
-#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doSNOW` package.
+#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doFuture` package.
+#' * `futureStrategy`: A string specifying the strategy used in parallel processing (when `nCores` >  1). Defaults to `'multisession'`. This is passed to the `plan` method of the `doFuture` package. See the `doFuture` package for valid options.
 #' 
 #' `type = 'IG'` implements the independent generator approach (IG, Foldnes & Olsson, 2016) approach 
 #' specifying third and fourth moments of the marginals, and thus requires that skewness (`skewness`) and excess kurtosis (`kurtosis`) for each variable are provided as vectors. This requires the `covsim` package.
@@ -226,6 +227,7 @@ semPower.powerCFA <- function(type, comparison = 'restricted',
     if(is.null(nullWhich) && nfac == 2) nullWhich <- c(1, 2)
     if(is.null(nullWhich)) stop('nullWhich must be defined.')
     if(!is.list(nullWhich)) nullWhich <- list(nullWhich)
+    if(nullEffect == 'corx=corz' & length(nullWhich) < 2) stop('corx=corz compares two correlations, so nullWhich must contain at least two vectors.')
     if(any(unlist(lapply(nullWhich, function(x) length(x) != 2)))) stop('nullWhich may only contain vectors of size two.')
     if(any(unlist(lapply(nullWhich, function(x) x[1] == x[2])))) stop('elements in nullWhich may not refer to variances.')
     if(any(unlist(lapply(nullWhich, function(x) (x[1] < 1 || x[2] < 1 || x[1] > nfac || x[2] > nfac))))) stop('At least one element in nullWhich is an out of bounds index concerning Phi.')
@@ -241,6 +243,12 @@ semPower.powerCFA <- function(type, comparison = 'restricted',
     if(length(nullWhich) != 2) stop('nullWhich must be a vector with two elements.')
     if(nullWhich[1] > nrow(generated[['Lambda']]) || nullWhich[2] > ncol(generated[['Lambda']])  ) stop('nullWhich refers to an invalid element in Lambda. The first entry must be <= nIndicator, the second <= nFactors.')
     if(generated[['Lambda']][nullWhich[1], nullWhich[2]] == 0) stop('nullWhich refers to a loading with a population value of zero. The loading referred by nullWhich must differ from zero.')
+  }
+
+  # warn if loadings dont satisfy metric invariance
+  if(isMultigroup){
+    lambdas <- sapply(generated, '[[', 'Lambda')
+    if(any(apply(lambdas, 1, function(x) length(unique(x)) != 1))) warning('At least one loading differs across groups, violating metric invariance. Verify that this is intended.')
   }
   
   ### H0 model
@@ -279,7 +287,7 @@ semPower.powerCFA <- function(type, comparison = 'restricted',
     tok <- lapply(tok, function(x){
       if(startsWith(x, tFac) && grepl('=~', x)){
         t <- lapply(strsplit(strsplit(x, '=~', fixed = TRUE)[[1]][2], '+', fixed = TRUE)[[1]], trimws)
-        idx <- grep(tInd, unlist(t))
+        idx <- which(sub('NA*', '', t, fixed = TRUE) == tInd)
         if(grepl('NA', t[[idx]])){
           t[[idx]] <- sub('NA', '0', t[[idx]])
         }else{

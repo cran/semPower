@@ -92,6 +92,7 @@ semPower.aPriori <- function(effect = NULL, effect.measure = NULL,
                      lavOptions = lavOptions)
 
   Sigma <- pp[['Sigma']]
+  mu <- pp[['mu']]
   
   if(!is.null(beta)){
     desiredBeta <- beta
@@ -119,7 +120,7 @@ semPower.aPriori <- function(effect = NULL, effect.measure = NULL,
     
     # make a reasonable guess about required sample size
     exponent <- -floor(log10(fmin)) + 1
-    startN <- 5*10^(exponent)
+    startN <- 5 * 10^exponent
     
     bPrecisionWarning <- (startN < 5)  # skip estm for N < 5, but take N = 10 as effective minimum 
     
@@ -129,7 +130,12 @@ semPower.aPriori <- function(effect = NULL, effect.measure = NULL,
                             critChi = critChi, logBetaTarget = logBetaTarget, fmin = unlist(fmin.g), df = df, weights = weights,
                             method = 'Nelder-Mead', control = list(warn.1d.NelderMead = FALSE))
       
-      requiredN <- sum(ceiling(weights * chiCritOptim$par))  
+      requiredN <- ceiling(chiCritOptim$par)
+      
+      # Nelder-Mead may stop slightly early: refine to the smallest N that actually achieves the desired power
+      reachesTarget <- function(cN) pchisq(critChi, df, sum(unlist(fmin.g) * ((weights * cN) - 1)), log.p = TRUE) <= logBetaTarget
+      while(!reachesTarget(requiredN)) requiredN <- requiredN + 1
+      while(requiredN > 10 && reachesTarget(requiredN - 1)) requiredN <- requiredN - 1
       
       # even N = 10 achieves or exceeds desired power
       if(requiredN < 10){
@@ -144,6 +150,8 @@ semPower.aPriori <- function(effect = NULL, effect.measure = NULL,
     
     # N by group
     requiredN.g <- ceiling(weights * requiredN)
+    # make sure total N matches sum of group n
+    requiredN <- sum(requiredN.g)
     
   # first perform analytical even when simulated is requested, so both results can be provided and we get start N
   }else{
@@ -178,7 +186,7 @@ semPower.aPriori <- function(effect = NULL, effect.measure = NULL,
   impliedPower <- pchisq(critChi, df, impliedNCP, lower.tail = FALSE)
 
   # need to compute this after having determined Ns, because some indices rely on sample weights in multigroup case
-  fit <- getIndices.F(fmin, df, p, pp[['SigmaHat']], Sigma, pp[['muHat']], pp[['mu']], requiredN.g)
+  fit <- getIndices.F(fmin, df, pp[['p']], pp[['SigmaHat']], Sigma, pp[['muHat']], pp[['mu']], requiredN.g)
   
   result <- list(
     type = "a-priori",

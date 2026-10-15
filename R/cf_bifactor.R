@@ -87,7 +87,8 @@
 #' * `missingVarProp`: can be used instead of `missingVars`: The proportion of variables containing missing data (defaults to zero).
 #' * `missingProp`: The proportion of missingness for variables containing missing data (defaults to zero), either a single value or a vector giving the probabilities for each variable.
 #' * `missingMechanism`: The missing data mechanism, one of `MCAR` (the default), `MAR`, or `NMAR`.
-#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doSNOW` package.
+#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doFuture` package.
+#' * `futureStrategy`: A string specifying the strategy used in parallel processing (when `nCores` >  1). Defaults to `'multisession'`. This is passed to the `plan` method of the `doFuture` package. See the `doFuture` package for valid options.
 #' 
 #' `type = 'IG'` implements the independent generator approach (IG, Foldnes & Olsson, 2016) approach 
 #' specifying third and fourth moments of the marginals, and thus requires that skewness (`skewness`) and excess kurtosis (`kurtosis`) for each variable are provided as vectors. This requires the `covsim` package.
@@ -353,17 +354,25 @@ semPower.powerBifactor <- function(type, comparison = 'restricted',
     cLambda <- matrix(0, nrow = (sum(extraIndicators) + nrow(csLambda)), ncol = (numBifactors + ncol(csLambda)))  
     # specific factors + covariate(s)
     cLambda[(sum(extraIndicators) + 1) : nrow(cLambda), (numBifactors + 1) : ncol(cLambda)] <- csLambda
-    extraLoadings <- lapply(seq_along(cBfLoadings), function(x) cBfLoadings[[x]][1:extraIndicators[x]])
+    extraLoadings <- lapply(seq_along(cBfLoadings), function(x) cBfLoadings[[x]][seq_len(extraIndicators[x])])
     for(i in 1:numBifactors){
       # bifactor extra indicators
-      if(i == 1) idx <- 1 : extraIndicators[i] else idx <- (1 + extraIndicators[i - 1]) : (extraIndicators[i - 1] + extraIndicators[i])
-      cLambda[idx, i] <- extraLoadings[[i]]
+      if(extraIndicators[i] > 0){
+        idx <- sum(extraIndicators[seq_len(i - 1)]) + seq_len(extraIndicators[i])
+        cLambda[idx, i] <- extraLoadings[[i]]
+      }
       # bifactor specific indicators 
       idx <- length(unlist(extraLoadings)) + unlist(lapply(cBfWhichFactors[[i]], function(x) which(csLambda[, x] != 0)))
       cLambda[idx, i] <- cBfLoadings[[i]][(1 + extraIndicators[i]) : length(cBfLoadings[[i]])]
     }
     cLambda
   })
+  
+  # warn if loadings dont satisfy metric invariance
+  if(isMultigroup){
+    lambdas <- do.call(cbind, lapply(Lambda, c))
+    if(any(apply(lambdas, 1, function(x) length(unique(x)) != 1))) warning('At least one loading differs across groups, violating metric invariance. Verify that this is intended.')
+  }
   
   ### create Phi
   sPhi <- Phi

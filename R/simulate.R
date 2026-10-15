@@ -36,6 +36,7 @@
 #' * `missingProp`: The proportion of missingness for variables containing missing data (defaults to zero), either a single value or a vector giving the probabilities for each variable.
 #' * `missingMechanism`: The missing data mechanism, one of `'MCAR'` (the default), `'MAR'`, or `'NMAR'`.
 #' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doFuture` package.
+#' * `futureStrategy`: A string specifying the strategy how to resolve a future when `nCores` is larger than 1. Defaults to `'multisession'`. This is passed to the `plan` method of the `doFuture` package. See the `doFuture` package for valid strategies.
 #' 
 #' `type = 'IG'` implements the independent generator approach (IG, Foldnes & Olsson, 2016) approach 
 #' specifying third and fourth moments of the marginals, and thus requires that skewness (`skewness`) and excess kurtosis (`kurtosis`) for each variable are provided as vectors. This requires the `covsim` package.
@@ -139,7 +140,8 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
                        missingVarProp = 0,
                        missingProp = 0,
                        missingMechanism = 'MCAR',
-                       nCores = 1
+                       nCores = 1,
+                       futureStrategy = 'multisession'
                      ),
                      lavOptions = NULL, lavOptionsH1 = lavOptions,
                      returnFmin = TRUE){
@@ -147,7 +149,8 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
   nCores <- ifelse(!is.null(simOptions[['nCores']]), simOptions[['nCores']], 1)
   if(nCores > 1 && !'doFuture' %in% rownames(installed.packages())) stop('Parallel processing requires the doFuture package, so install doFuture first.')    
   if(nCores > 1 && !'progressr' %in% rownames(installed.packages())) stop('Parallel processing requires the progressr package, so install progressr first.')    
-
+  futureStrategy <- ifelse(!is.null(simOptions[['futureStrategy']]), simOptions[['futureStrategy']], 'multisession')
+  
   nReplications <- ifelse(!is.null(simOptions[['nReplications']]), simOptions[['nReplications']], 500)
   minConvergenceRate <- ifelse(!is.null(simOptions[['minConvergenceRate']]), simOptions[['minConvergenceRate']], .75)
   maxReplications <- ceiling(nReplications / minConvergenceRate)
@@ -167,7 +170,7 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
   # warn in case of long computation times
   lavEstimators <- c("MLM", "MLMV", "MLMVS", "MLF", "MLR", "WLS", "DWLS", "WLSM", "WLSMV", "ULSM", "ULSMV")
   costlyEstm <- (!is.null(lavOptions[['estimator']]) && toupper(lavOptions[['estimator']]) %in% lavEstimators)
-  projectedLong <- (costlyEstm && ncol(Sigma) > 50 && nReplications > 100) || (ncol(Sigma) > 100 && nReplications > 500) || nReplications > 10000
+  projectedLong <- (costlyEstm && nvar > 50 && nReplications > 100) || (nvar > 100 && nReplications > 500) || nReplications > 10000
   if(projectedLong){
     mResp <- menu(c("Yes", "No"), title = "Simulated power with the specified model, the number of replications, and the type of estimator will presumably take a long time.\nDo you really want to proceed?")
     if(mResp != 1){
@@ -181,9 +184,13 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
   # we need to call lavaan() directly with defaults as defined in sem()
   lavOptions <- append(getLavOptions(lavOptions, isCovarianceMatrix = FALSE, nGroups = length(Sigma)),
                        list(check.gradient = FALSE, check.post = FALSE, check.vcov = FALSE))
+  if(!is.null(lavOptions[['estimator']]) && tolower(lavOptions[['estimator']]) %in% c('wlsmv', 'dwls')) lavOptions[['ordered']] <- FALSE
+  if(is.null(lavOptions[['estimator']]) || (!is.null(lavOptions[['estimator']]) && tolower(lavOptions[['estimator']]) == c('ml'))) lavOptions[['test']] <- c('standard') # disable browne.residual.nt.model
+  
   if(!is.null(modelH1)){
     lavOptionsH1 <- append(getLavOptions(lavOptionsH1, isCovarianceMatrix = FALSE, nGroups = length(Sigma)),
                            list(check.gradient = FALSE, check.post = FALSE, check.vcov = FALSE))
+    if(!is.null(lavOptionsH1[['estimator']]) && tolower(lavOptionsH1[['estimator']]) %in% c('wlsmv', 'dwls')) lavOptionsH1[['ordered']] <- FALSE
   }
   
   # generate data. we always generate maxreplications, though this incurs a bit overhead 
@@ -194,7 +201,7 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
   }
 
   # if we have missings, notify lav and check estimator 
-  if(sum(is.na(simData[[1]])) > 0){
+  if(sum(is.na(unlist(simData[[1]]))) > 0){
     lavOptions <- append(lavOptions, list(missing = 'ml'))
     if(!is.null(lavOptions[['estimator']]) && tolower(lavOptions[['estimator']]) %in% c('mlm', 'mlmv', 'mlmvs')) stop('Estimators mlm, mlmv, and mlmvs are not supported with missing data. Use mlr or mlf instead.')
     if(!is.null(modelH1)) lavOptionsH1 <- append(lavOptionsH1, list(missing = 'ml'))
@@ -203,7 +210,7 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
   # parallel
   if(nCores > 1){
     `%dofuture%` <- doFuture::`%dofuture%`
-    future::plan(future::multisession, workers = nCores)
+    future::plan(futureStrategy, workers = nCores)
     progressr::with_progress({
       p <- progressr::progressor(along = seq(nReplications)) # progressbar
       res <- foreach::foreach(r = seq(nReplications), .options.future = list(seed = TRUE)) %dofuture% {
@@ -221,45 +228,48 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
     # replace non-converged by NA
     fit[which(unlist(lapply(fit, function(x) length(x) == 0)))] <- list(rep(list(rep(NA, 5)), 3))
     nConverged <- sum(!is.na(do.call(rbind, lapply(fit, '[[', 1))[, 1]))
-    
-    rr <- 1
+    nEstimated <- nReplications
+
   }else{
     # single core case
     res <- list()
     nConverged <- 0
+    nEstimated <- 0
   }
   
   
-  ## check convergence and do additional non-parallel runs to reach target replications
+  ## check convergence and do additional non-parallel runs to reach target replications; also called in single core case to do all replications
   if(nConverged < nReplications){
     
     # fit models
     progressBar <- txtProgressBar(min = 0, max = (nReplications - nConverged), initial = 0, style = 3)
-    r <- rr <- (nConverged + 1)
+    r <- nConverged + 1
+    rr <- nEstimated + 1
     while(r <= nReplications && rr <= maxReplications){
       setTxtProgressBar(progressBar, (r - nConverged))
-      cr <- doSim(r = r, 
+      cr <- doSim(r = rr, 
                   simData = simData,
                   isMultigroup = is.list(Sigma),
                   modelH0 = modelH0, modelH1 = modelH1,
                   lavOptions = lavOptions, lavOptionsH1 = lavOptionsH1)
       # [fit][fitH0][fmin] 
-      if(!is.null(cr[[1]][[1]][1]) && !is.na(cr[[1]][[1]][1])){
+      if(length(cr[[1]]) > 0 && !is.null(cr[[1]][[1]][1]) && !is.na(cr[[1]][[1]][1])){
         res <- append(res, list(cr))
         r <- r + 1
       }
       rr <- rr + 1
     }
     close(progressBar)
+    nEstimated <- rr - 1
   }
-  usedDataIdx <- seq(nConverged + (rr - 1))
-  
+
   # check convergence
+  if(length(res) == 0) stop("Something went wrong during model estimation, no replication converged.")
   fit <- lapply(res, '[[', 1)
-  # replace non-converged by NA
+  # replace non-converged by NA and determine actual convergence rate by having fitmeasures
   fit[which(unlist(lapply(fit, function(x) length(x) == 0)))] <- list(rep(list(rep(NA, 5)), 3))
   nConverged <- sum(!is.na(do.call(rbind, lapply(fit, '[[', 1))[, 1]))
-  convergenceRate <- nConverged / length(res)
+  convergenceRate <- nConverged / nEstimated
   if(nConverged == 0) stop("Something went wrong during model estimation, no replication converged.")
   if(convergenceRate < minConvergenceRate){ 
     warning(paste("Actual convergence rate of", round(convergenceRate, 2), "is below minConvergenceRate of", minConvergenceRate, ". Results are based on", nConverged,"replications."))
@@ -292,6 +302,9 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
     ubFmeanGroups <- NULL
     if(!is.na(efminGroups[1])) ubFmeanGroups <- unlist(lapply(1:ncol(efminGroups), function(x) mean( efminGroups[ , x] - (df / length(N)) / N[[x]] ))) / length(N)
 
+    outSimData <- simData
+    if(is.list(Sigma)) outSimData <- lapply(seq(nReplications), function(r) do.call(rbind, lapply(simData, '[[', r )))
+    
     out <- list(
       ePower = ePower,
       meanFmin = ubFmean,
@@ -304,10 +317,11 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
       chiSqDiff = fitDiff[, 'chisq'],
       rrH0 = rrH0,
       simRes = list(
-        simData = simData[usedDataIdx],
+        simData = outSimData,
         fitH0 = fitH0
       )
     )
+    
     
     if(!is.null(modelH1)){
       fitH1 <- do.call(rbind, lapply(fit, '[[', 2))
@@ -351,24 +365,45 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
       # for phi/psi/beta, we only consider population parameters that are larger than
       # a small constant to avoid absurd relative biases for parameters with true values close to zero 
       cPhi <- lavresPop@Model@GLIST[which(names(lavresPop@Model@GLIST) %in% 'phi')]
+      bPhi <- NULL
       if(length(cPhi) > 0){
         nonzero <- unlist(lapply(cPhi, function(x) which(abs(x) > .01)))
         pPhi <- unlist(lapply(cPhi, function(x) x[nonzero]))
-        if(!is.null(pPhi)) bPhi <- mean( (apply(rPhi, 2, median) - pPhi) / pPhi ) else bPhi <- NULL
+        if(!is.null(pPhi)){
+          if(is.null(ncol(rPsi[, nonzero]))){
+            bPhi <- mean( (median(rPhi[, nonzero]) - pPhi) / pPhi )
+          }else{
+            bPhi <- mean( (apply(rPhi[, nonzero], 2, median) - pPhi) / pPhi )
+          }
+        }
       }
       
       cPsi <- lavresPop@Model@GLIST[which(names(lavresPop@Model@GLIST) %in% 'psi')]
       if(length(cPsi) > 0){
         nonzero <- unlist(lapply(cPsi, function(x) which(abs(x) > .01)))
         pPsi <- unlist(lapply(cPsi, function(x) x[nonzero]))
-        if(!is.null(pPsi)) bPsi <- mean( (apply(rPsi[, nonzero], 2, median) - pPsi) / pPsi ) else bPsi <- NULL
+        bPsi <- NULL
+        if(!is.null(pPsi)){
+          if(is.null(ncol(rPsi[, nonzero]))){
+            bPsi <- mean( (median(rPsi[, nonzero]) - pPsi) / pPsi ) 
+          }else{
+            bPsi <- mean( (apply(rPsi[, nonzero], 2, median) - pPsi) / pPsi ) 
+          }
+        } 
       }
       
       cBeta <- lavresPop@Model@GLIST[which(names(lavresPop@Model@GLIST) %in% 'beta')]
+      bBeta <- NULL
       if(length(cBeta) > 0){
         nonzero <- unlist(lapply(cBeta, function(x) which(abs(x) > .01)))
         pBeta <- unlist(lapply(cBeta, function(x) x[nonzero]))
-        if(!is.null(pBeta)) bBeta <- mean( (apply(rBeta[, nonzero], 2, median) - pBeta) / pBeta ) else bBeta <- NULL
+        if(!is.null(pBeta)){
+          if(is.null(ncol(rBeta[, nonzero]))){
+            bBeta <- mean( (median(rBeta[, nonzero]) - pBeta) / pBeta )
+          }else{
+            bBeta <- mean( (apply(rBeta[, nonzero], 2, median) - pBeta) / pBeta )
+          }
+        } 
       }    
       
       out <- append(out, list(
@@ -396,9 +431,7 @@ simulate <- function(modelH0 = NULL, modelH1 = NULL,
 
 #' doSim
 #' 
-#' Generates random data from population variance-covariance matrix and population means, either
-#' from a multivariate normal distribution, or using one of various approaches to generate 
-#' non-normal data.
+#' Performs simulation on single data set
 #'
 #' @param r replication id
 #' @param simData list of datafiles
@@ -432,7 +465,7 @@ doSim <- function(r,
       
       lavfitH0 <- lavaan::fitMeasures(lavresH0)
       fitH0 <- lavfitH0[c('fmin','chisq', 'df', 'pvalue')]
-      if(lavresH0@Options[['test']] != 'standard'){
+      if('chisq.scaled' %in% names(lavfitH0)){
         fitH0 <- lavfitH0[c('fmin','chisq.scaled', 'df.scaled', 'pvalue.scaled')]
       }
       fitH0['fmin'] <- 2*fitH0['fmin'] # lav reports .5*fmin
@@ -457,7 +490,7 @@ doSim <- function(r,
           
           lavfitH1 <- lavaan::fitMeasures(lavresH1)
           fitH1 <- lavfitH1[c('fmin','chisq', 'df', 'pvalue')]
-          if(lavresH1@Options[['test']] != 'standard'){
+          if('chisq.scaled' %in% names(lavfitH1)){
             fitH1 <- lavfitH1[c('fmin','chisq.scaled', 'df.scaled', 'pvalue.scaled')]
           }
           fitH1['fmin'] <- 2*fitH1['fmin'] # lav reports .5*fmin
@@ -467,7 +500,7 @@ doSim <- function(r,
           
           fitH1 <- c(fitH1, cfminGroupsH1)
           
-          if(lavresH1@Options[['test']] != 'standard'){
+          if('chisq.scaled' %in% names(lavfitH1)){
             mcomp <- lavaan::anova(lavresH0, lavresH1, method = 'satorra.bentler.2010') 
           }else{
             mcomp <- lavaan::anova(lavresH0, lavresH1) 

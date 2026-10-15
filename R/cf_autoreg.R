@@ -76,7 +76,8 @@
 #' * `missingVarProp`: can be used instead of `missingVars`: The proportion of variables containing missing data (defaults to zero).
 #' * `missingProp`: The proportion of missingness for variables containing missing data (defaults to zero), either a single value or a vector giving the probabilities for each variable.
 #' * `missingMechanism`: The missing data mechanism, one of `MCAR` (the default), `MAR`, or `NMAR`.
-#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doSNOW` package.
+#' * `nCores`: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the `doFuture` package.
+#' * `futureStrategy`: A string specifying the strategy used in parallel processing (when `nCores` >  1). Defaults to `'multisession'`. This is passed to the `plan` method of the `doFuture` package. See the `doFuture` package for valid options.
 #' 
 #' `type = 'IG'` implements the independent generator approach (IG, Foldnes & Olsson, 2016) approach 
 #' specifying third and fourth moments of the marginals, and thus requires that skewness (`skewness`) and excess kurtosis (`kurtosis`) for each variable are provided as vectors. This requires the `covsim` package.
@@ -363,7 +364,7 @@ semPower.powerAutoreg <- function(type, comparison = 'restricted',
   
   nullValid <- c('autoreg', 'autoreg=0', 'autorega=autoregb',
                  'lag1', 'lag1=0', 'lag1a=lag1b',
-                 'lag2', 'lag3', 'lag2=0', 'lag3=0', 'lagged=0',
+                 'lag2', 'lag3', 'lag2=0', 'lag3=0',
                  'var', 'mean')
   nullEffect <- checkNullEffect(nullEffect, nullValid)
   
@@ -380,7 +381,7 @@ semPower.powerAutoreg <- function(type, comparison = 'restricted',
   invisible(lapply(autoregEffects, function(x) lapply(x, function(x) checkBounded(x, 'All autoregressive effects ', bound = c(-1, 1), inclusive = FALSE))))
   
   if(!is.null(lag2Effects) && nWaves < 3) stop('There are no lag-2 effects when nWaves < 3')
-  if(!is.null(lag3Effects) && nWaves < 4) stop('There are no lag-2 effects when nWaves < 4')
+  if(!is.null(lag3Effects) && nWaves < 4) stop('There are no lag-3 effects when nWaves < 4')
   if(isMultigroup && !is.null(lag2Effects) && !is.list(lag2Effects)) stop('For multigroup models, lag2Effects must be a list')
   if(isMultigroup && !is.null(lag3Effects) && !is.list(lag3Effects)) stop('For multigroup models, lag3Effects must be a list')
   if(isMultigroup && !is.null(lag2Effects) && length(lag2Effects) != nGroups) stop('lag2Effects must be provided for each group.')
@@ -402,7 +403,7 @@ semPower.powerAutoreg <- function(type, comparison = 'restricted',
   }
   if(!is.null(variances) && standardized) stop('When variances are provided, standardized must be FALSE.') 
   if(isMultigroup && !is.null(means) && !is.list(means)) stop('For multigroup models, means must be a list')
-  if(isMultigroup && !is.null(variances) && !is.list(variances)) stop('For multigroup models, means must be a list')
+  if(isMultigroup && !is.null(variances) && !is.list(variances)) stop('For multigroup models, variances must be a list')
   if(!is.null(means) && !is.list(means)) means <- list(means)
   if(!is.null(variances) && !is.list(variances)) variances <- list(variances)
   if(!is.null(means) && any(unlist(lapply(means, function(x) length(x) != nWaves)))) stop('means must be provided for each wave.') 
@@ -418,30 +419,30 @@ semPower.powerAutoreg <- function(type, comparison = 'restricted',
   if(nullEffect == 'lag1') nullEffect <- 'autoreg'
   if(nullEffect == 'lag1=0') nullEffect <- 'autoreg=0'
   if(nullEffect == 'lag1a=lag1b') nullEffect <- 'autorega=autoregb'
-  if('lag1' %in% waveEqual) waveEqual[which('lag1' %in% waveEqual)] <- 'autoreg'
-  if('lag1=0' %in% waveEqual) waveEqual[which('lag1' %in% waveEqual)] <- 'autoreg=0'
-  if('lag1a=lag1b' %in% waveEqual) waveEqual[which('lag1' %in% waveEqual)] <- 'autorega=autoregb'
+  if('lag1' %in% waveEqual) waveEqual[waveEqual == 'lag1'] <- 'autoreg'
+  if('lag1=0' %in% waveEqual) waveEqual[waveEqual == 'lag1=0'] <- 'autoreg=0'
+  if('lag1a=lag1b' %in% waveEqual) waveEqual[waveEqual == 'lag1a=lag1b'] <- 'autorega=autoregb'
 
   if(nullEffect %in% waveEqual) stop('You cannot set the same parameters in nullEffect and waveEqual')
   if(nWaves == 2 && nullEffect %in% c('autoreg')) stop('For two waves, there is only one one autoregressive effect. Did you mean autoreg = 0?')
   if(nWaves == 3 && nullEffect %in% c('lag2')) stop('For three waves, there is only one lag2 effect. Did you mean lag2 = 0?')
-  if(nWaves == 4 && nullEffect %in% c('lag3')) stop('For three waves, there is only one lag3 effect. Did you mean lag3 = 0?')
+  if(nWaves == 4 && nullEffect %in% c('lag3')) stop('For four waves, there is only one lag3 effect. Did you mean lag3 = 0?')
   if((nullEffect == 'var' || 'var' %in% waveEqual) && is.null(variances)) stop('Either nullEffect or waveEqual refer to variances, but no variances are provided.')
-  if((nullEffect == 'mean' || 'mean' %in% waveEqual) && is.null(variances)) stop('Either nullEffect or waveEqual refer to means, but no means are provided.')
+  if((nullEffect == 'mean' || 'mean' %in% waveEqual) && is.null(means)) stop('Either nullEffect or waveEqual refer to means, but no means are provided.')
   if((nullEffect == 'mean' || 'mean' %in% waveEqual) && !invariance) stop('When hypothesis include latent means, invariance must be TRUE.')
   
   if(is.null(nullWhich) && nWaves == 2) nullWhich <- 1
   if(is.null(nullWhich)){
     if(nWaves > 2 && !c('autoreg') %in% waveEqual && nullEffect %in% c('autoreg=0', 'autorega=autoregb')) stop('nullWhich must be defined when there are more than 2 waves and the autoregressive effects are not constant across waves.') 
-    if(nWaves > 3 && !c('lag2') %in% waveEqual && nullEffect %in% c('lag2=0', 'lagged=0')) stop('nullWhich must be defined when there are more than 3 waves and the lag2 effects are not constant across waves.') 
-    if(nWaves > 4 && !c('lag3') %in% waveEqual && nullEffect %in% c('lag3=0', 'lagged=0')) stop('nullWhich must be defined when there are more than 4 waves and the lag3 effects are not constant across waves.') 
+    if(nWaves > 3 && !c('lag2') %in% waveEqual && nullEffect %in% c('lag2=0')) stop('nullWhich must be defined when there are more than 3 waves and the lag2 effects are not constant across waves.') 
+    if(nWaves > 4 && !c('lag3') %in% waveEqual && nullEffect %in% c('lag3=0')) stop('nullWhich must be defined when there are more than 4 waves and the lag3 effects are not constant across waves.') 
     nullWhich <- 1 # this should be the proper default for all remaining cases
   }
   if(!is.null(nullWhich)){
     if(!is.numeric(nullWhich) || length(nullWhich) > 1) stop('nullWhich must be a single number.')
     if(nullWhich < 1 || nullWhich > (nWaves - 1)) stop('nullWhich must lie between 1 and nWaves - 1.')
-    if('lag2' %in% nullEffect && nullWhich > (nWaves - 2)) stop('For lag2 effects, nullWhich must lie between 1 and nWaves - 2.')
-    if('lag3' %in% nullEffect && nullWhich > (nWaves - 3)) stop('For lag3 effects, nullWhich must lie between 1 and nWaves - 3.')
+    if(nullEffect %in% c('lag2=0', 'lag2') && nullWhich > (nWaves - 2)) stop('For lag2 effects, nullWhich must lie between 1 and nWaves - 2.')
+    if(nullEffect %in% c('lag3=0', 'lag3') && nullWhich > (nWaves - 3)) stop('For lag3 effects, nullWhich must lie between 1 and nWaves - 3.')
   }
   
   ### create B
@@ -467,8 +468,7 @@ semPower.powerAutoreg <- function(type, comparison = 'restricted',
   })
   
   # add metric invariance constraints to analysis model
-  metricInvarianceFactors <- NULL
-  if(invariance) metricInvarianceFactors <- list(seq(nWaves))
+  metricInvarianceFactors <- list(seq(nWaves))
 
   # define latent means
   Alpha <- NULL
@@ -502,15 +502,29 @@ semPower.powerAutoreg <- function(type, comparison = 'restricted',
                                    ...)
   }
   
+  if(!isMultigroup) Lambda <- generated[['Lambda']] else Lambda <- generated[[1]][['Lambda']]
+  
+  ### warn if loadings dont satisfy metric invariance
+  # check for equality across waves
+  if(invariance){
+    mIdx <- sapply(seq(ncol(Lambda)), function(x) (which(Lambda[ , x] != 0))) # non zero loadings indices
+    rIdx <- lapply(seq(nrow(mIdx)), function(r) unlist(lapply(seq(length(mIdx[r,])), function(c)  mIdx[r, c] + (c-1) * nrow(Lambda)))) # adapt indices to vech
+    if(any(unlist(lapply(rIdx, function(x) length(unique(c(Lambda)[x])) != 1)))) warning('At least one loading differs across waves, violating metric invariance. Verify that this is intended.')
+  }
+  # check for equality across groups
+  if(isMultigroup){
+    lambdas <- sapply(generated, '[[', 'Lambda')
+    if(any(apply(lambdas, 1, function(x) length(unique(x)) != 1))) warning('At least one loading differs across groups, violating metric invariance. Verify that this is intended.')
+  }
+  
   ### create model strings
   if(!isMultigroup) model <- generated[['modelTrueCFA']] else model <- generated[[1]][['modelTrueCFA']]
-  if(!isMultigroup) Lambda <- generated[['Lambda']] else Lambda <- generated[[1]][['Lambda']]
   
   # add autoregressive structure 
   for(f in 2:ncol(Beta[[1]])){     # omit first row
     fidx <- (f - 1)
-    if(estimateLag2Effects && f > 2) fidx <- c(fidx, (f - 2)) # estm lag2 effects regardless of these are zero
-    if(estimateLag3Effects && f > 3) fidx <- c(fidx, (f - 3)) # estm lag3 effects regardless of these are zero
+    if(estimateLag2Effects && f > 2) fidx <- c(fidx, (f - 2)) # always estm lag2 effects (also zero ones)
+    if(estimateLag3Effects && f > 3) fidx <- c(fidx, (f - 3)) # always estm lag3 effects (also zero ones)
     if(length(fidx) != 0){
       tok <- paste0('f', f, ' ~ ', paste(paste0('pf', paste0(formatC(f, width = 2, flag = 0), formatC(fidx, width = 2, flag = 0)), '*'), paste0('f', fidx), sep = '', collapse = ' + '))
       model <- paste(model, tok, sep='\n')
@@ -547,7 +561,7 @@ semPower.powerAutoreg <- function(type, comparison = 'restricted',
   if(autocorResiduals){
     # do this only when there is at least one latent variable
     if(nrow(Lambda) > nWaves){
-      autocorResidualsFactors <- metricInvarianceFactors  # same structure 
+      autocorResidualsFactors <- list(seq(nWaves))  # same structure as metricInvarianceFactors
       tok <- list()
       for(x in seq_along(autocorResidualsFactors)){
         ci <- lapply(autocorResidualsFactors[[x]], function(f) paste0('x', which(Lambda[, f] != 0)))
@@ -636,14 +650,14 @@ semPower.powerAutoreg <- function(type, comparison = 'restricted',
       modelH0 <- gsub(pAutoregX[nullWhich], '0', modelH0)
     }
   }
-  if(nullEffect %in% c('lag2=0', 'lagged')){
+  if(nullEffect %in% c('lag2=0')){
     if('lag2' %in% waveEqual){
       modelH0 <- gsub(paste(pLag2, collapse = ''), '0', modelH0)
     }else{
       modelH0 <- gsub(pLag2[nullWhich], '0', modelH0)
     }
   }
-  if(nullEffect %in% c('lag3=0', 'lagged')){
+  if(nullEffect %in% c('lag3=0')){
     if('lag3' %in% waveEqual){
       modelH0 <- gsub(paste(pLag3, collapse = ''), '0', modelH0)
     }else{

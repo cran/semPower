@@ -119,7 +119,7 @@ Additional arguments related to the \strong{definition of the factor model}:
 \item \code{loadM}: Can be used instead of \code{Lambda}: Used in conjunction with \code{nIndicator}. Defines the loading either for all indicators (if a single number is provided) or separately for each factor (if a vector is provided), e. g. \code{loadM = c(.5, .6)} defines the loadings of the first factor to equal .5 and those of the second factor do equal .6.
 }
 
-So either \code{Lambda}, or \code{loadings}, or \code{nIndicator} and \code{loadM} need to be defined. Note that neither may contain the noise factors.
+So either \code{Lambda}, or \code{loadings}, or \code{nIndicator} and \code{loadM} need to be defined. Neither may contain the noise factors. In a multigroup structure, only provide the loadings for a single group.
 If the model contains observed variables only, use \code{Lambda = diag(x)} where \code{x} is the number of variables.
 
 The order of the factors is (X1, X2, ..., X_nWaves).
@@ -142,7 +142,8 @@ The approaches generating non-normal data require additional arguments detailed 
 \item \code{missingVarProp}: can be used instead of \code{missingVars}: The proportion of variables containing missing data (defaults to zero).
 \item \code{missingProp}: The proportion of missingness for variables containing missing data (defaults to zero), either a single value or a vector giving the probabilities for each variable.
 \item \code{missingMechanism}: The missing data mechanism, one of \code{MCAR} (the default), \code{MAR}, or \code{NMAR}.
-\item \code{nCores}: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the \code{doSNOW} package.
+\item \code{nCores}: The number of cores to use for parallel processing. Defaults to 1 (= no parallel processing). This requires the \code{doFuture} package.
+\item \code{futureStrategy}: A string specifying the strategy used in parallel processing (when \code{nCores} >  1). Defaults to \code{'multisession'}. This is passed to the \code{plan} method of the \code{doFuture} package. See the \code{doFuture} package for valid options.
 }
 
 \code{type = 'IG'} implements the independent generator approach (IG, Foldnes & Olsson, 2016) approach

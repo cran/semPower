@@ -1,9 +1,33 @@
+semPower 2.2.0 (october 2026)
+===========
+
+* single group/occasion identification is now the default in models assuming metric or scalar invariance in powerMI and powerLI. The previous behavior can be obtained by setting singleGroupIdent = FALSE / singleOccasionIdent = FALSE.
+* allow referent scaling in powerMI and powerLI
+* allow multifactor models at each measurement in powerLI
+* allow definition of effect size in powerRegression in terms of R squared
+* more sensible structure of returned simulated data in the multigroup case 
+* add option to specify a specific strategy to resolve futures when using parallel processing to estimate simulated power
+* make semPower (also) work with lavaan > 0.7-1. 
+* bugfix: make simulated power with robust test-statistics (also) work with lavaan > 0.6-20. 
+* bugfix: proper evaluation of parameter bias in simulated power when models involve a single factor or single regression relations. 
+* bugfix: fix reported convergence rate in single-threaded simulated power 
+* bugfix: respect requested autocorrelated residuals without invariance constraints in powerARMA, powerAutoreg
+* bugfix: semPower.getDf reported incorrect df for multigroup models under special (rare) circumstances
+* bugfix: delta df for multigroup models with explicit comparison models could be incorrect under under special (rare) circumstances
+* bugfix: fix computation of cfi in multigroup settings 
+* bugfix: make tests involving residual invariance when not relying on lav strings work properly in powerMI 
+* bugfix: make multigroup hypotheses in powerRegression work when there is only a single predictor and when R2base = 0
+* bugfix: make powerLgcm work when there are both endogenous and exogenous tics
+* bugfix: fix autoreg = 0 and mvavg = 0 in powerArma when these are wave-equal and there are corresponding lag2 or lag3 effects
+* bugfix: powerBifactor now also supports more than two bifactor structures, and does not require bifactor specific indicators.
+
+
 semPower 2.1.3 (August 2025)
 ===========
+
 * update to R 4.5.0
 * add option to estimate direct effects with population values of zero in powerMediation
 * bugfix: fix genSigma with supplied means when Lambda includes secondary loadings
-
 
 
 semPower 2.1.2 (February 2025)

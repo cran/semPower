@@ -208,14 +208,14 @@ semPower.genSigma <- function(Lambda = NULL,
       Phi <- matrix(Phi, ncol = nfac, nrow = nfac)
       diag(Phi) <- 1
     } 
-    if(ncol(Phi) != nfac) stop('Phi must have the same number of rows/columns as the number of factors.') 
+    if(ncol(Phi) != nfac || nrow(Phi) != nfac) stop('Phi must have the same number of rows/columns as the number of factors.') 
     checkPositiveDefinite(Phi)
     if(!any(diag(Phi) != 1)){
-      if(any(Phi > 1) || any(Phi > 1)) stop('Phi implies correlations outside [-1 - 1].')
+      if(any(Phi > 1) || any(Phi < -1)) stop('Phi implies correlations outside [-1 - 1].')
     }
   }else{
-    if(ncol(Beta) != nfac) stop('Beta must have the same number of rows/columns as the number of factors.')
-    if(!is.null(Psi) && ncol(Psi) != nfac) stop('Psi must have the same number of rows/columns as the number of factors.')
+    if(ncol(Beta) != nfac || nrow(Beta) != nfac) stop('Beta must have the same number of rows/columns as the number of factors.')
+    if(!is.null(Psi) && (ncol(Psi) != nfac || nrow(Psi) != nfac)) stop('Psi must have the same number of rows/columns as the number of factors.')
     if(is.null(Psi)) Psi <- diag(ncol(Beta))
     if(any(diag(Psi) < 0)) stop('Model implies negative residual variances for latent variables (Psi). Make sure the sum of squared standardized regression coefficients in predicting a factor does not exceed 1.')
   }
@@ -731,26 +731,29 @@ semPower.getDf <- function(lavModel, nGroups = NULL, group.equal = NULL){
   # check whether lavaan is available
   if(!'lavaan' %in% rownames(installed.packages())) stop('This function depends on the lavaan package, so install lavaan first.')
   
-  # Fit model to dummy covariance matrix instead of counting parameters. 
+  # Fit model to dummy covariance matrix and means instead of counting parameters. 
   # This should also account for parameter restrictions and other intricacies
   # Model fitting will give warnings we just can ignore
   tryCatch({
     params <- lavaan::sem(lavModel)
-    dummyS <- diag(params@Model@nvar)
+    p <- params@Model@nvar
+    dummyS <- diag(p)
+    dummyMu <- rep(0, p)
     rownames(dummyS) <- params@Model@dimNames[[1]][[1]]
     if(is.null(nGroups) || nGroups == 1){
-      dummyFit <- suppressWarnings(lavaan::sem(lavModel, sample.cov = dummyS, sample.nobs = 1000, warn = FALSE))
+      # TODO consider whether we can obtain reliable df without actually fitting the model (do.fit = F)
+      dummyFit <- suppressWarnings(lavaan::sem(lavModel, sample.cov = dummyS, sample.mean = dummyMu, sample.nobs = 1000, 
+                                               warn = FALSE, optim.force.converged = TRUE))
     }else{
-      if(is.null(group.equal)){
-        dummyFit <- suppressWarnings(lavaan::sem(lavModel, sample.cov = lapply(1:nGroups, function(x) dummyS), sample.nobs = rep(1000, nGroups), warn = FALSE))
-      }else{
-        dummyFit <- suppressWarnings(lavaan::sem(lavModel, sample.cov = lapply(1:nGroups, function(x) dummyS), sample.nobs = rep(1000, nGroups), group.equal = group.equal, warn = FALSE))
-      }
+      dummyFit <- suppressWarnings(lavaan::sem(lavModel, sample.cov = lapply(1:nGroups, function(x) dummyS), sample.mean = lapply(1:nGroups, function(x) dummyMu), sample.nobs = rep(1000, nGroups), group.equal = group.equal, 
+                                               warn = FALSE, optim.force.converged = TRUE))
     }
     df <- dummyFit@test[['standard']][['df']]
     # the above can be NULL if lav encounters issues, so fall back in this case
     if(is.null(df)){
-      df <- (params@Model@nvar*(params@Model@nvar + 1) / 2) - dummyFit@loglik$npar
+      warning('Some problem occured when estimating df; reported df might be inaccurate.')
+      if(is.null(nGroups)) nGroups <- 1 
+      df <- nGroups * ((p*(p + 1) / 2) + p) - dummyFit@loglik$npar   # not sure whether this accounts for any parameter restriction scenario
     }
     df
   }, 
@@ -761,6 +764,24 @@ semPower.getDf <- function(lavModel, nGroups = NULL, group.equal = NULL){
     stop(e)
   }
   )
+}
+
+#' getKSdistance
+#'
+#' computes average absulute KS-distance between empirical and asympotic chi-square reference distribution.
+#' 
+#' @param chi empirical distribution  
+#' @param df df of reference distribution  
+#' @param ncp ncp of reference distribution  
+#' @return average absolute distance
+#' @importFrom stats ecdf pchisq
+getKSdistance <- function(chi, df, ncp = 0){
+  sChi <- sort(chi)
+  cdfChi <- ecdf(sChi)(sChi)
+  pChi <- sapply(sChi, FUN = pchisq, df = df, ncp = ncp)
+  ks1 <- abs(pChi - cdfChi)
+  ks2 <- abs(pChi - c(0, cdfChi[-length(cdfChi)]))
+  mean(c(mean(ks1), mean(ks2)))
 }
 
 #' getLavOptions
@@ -775,7 +796,9 @@ getLavOptions <- function(lavOptions = NULL, isCovarianceMatrix = TRUE, nGroups 
   # defaults as defined in lavaan::sem()
   lavOptionsDefaults <- list(int.ov.free = TRUE, int.lv.free = FALSE, auto.fix.first = TRUE,
                              auto.fix.single = TRUE, auto.var = TRUE, auto.cov.lv.x = TRUE,
-                             auto.efa = TRUE, auto.th = TRUE, auto.delta = TRUE, auto.cov.y = TRUE) 
+                             auto.efa = TRUE, auto.th = TRUE, auto.delta = TRUE, auto.cov.y = TRUE,
+                             se = 'none' # unneeded and speeds things up
+                             ) 
   
   # we also want N - 1 for ml based estm
   if(is.null(lavOptions[['estimator']]) || 
@@ -824,25 +847,6 @@ orderLavResults <- function(lavCov = NULL, lavMu = NULL){
 #' @return cov in correct order
 orderLavCov <- function(lavCov = NULL){
   orderLavResults(lavCov = lavCov)
-}
-
-
-#' getKSdistance
-#'
-#' computes average absulute KS-distance between empirical and asympotic chi-square reference distribution.
-#' 
-#' @param chi empirical distribution  
-#' @param df df of reference distribution  
-#' @param ncp ncp of reference distribution  
-#' @return average absolute distance
-#' @importFrom stats ecdf pchisq
-getKSdistance <- function(chi, df, ncp = 0){
-  sChi <- sort(chi)
-  cdfChi <- ecdf(sChi)(sChi)
-  pChi <- sapply(sChi, FUN = pchisq, df = df, ncp = ncp)
-  ks1 <- abs(pChi - cdfChi)
-  ks2 <- abs(pChi - c(0, cdfChi[-length(cdfChi)]))
-  mean(c(mean(ks1), mean(ks2)))
 }
 
 
